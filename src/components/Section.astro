@@ -1,0 +1,17 @@
+---
+interface Props {
+  id: string;
+  index: string;
+  title: string;
+}
+
+const { id, index, title } = Astro.props;
+---
+
+<section id={id} class="surface-light relative z-20 scroll-mt-20 border-t border-brand" aria-labelledby={`${id}-title`}>
+  <div class="mx-auto flex min-h-[70svh] w-full max-w-6xl flex-col gap-6 px-6 py-24 sm:px-10 lg:py-32">
+    <p class="tag">[ {index} ] {title}</p>
+    <h2 id={`${id}-title`} class="text-4xl font-semibold tracking-[-0.04em] sm:text-5xl">{title}</h2>
+    <p class="text-graphite/65">[PENDIENTE]</p>
+  </div>
+</section>

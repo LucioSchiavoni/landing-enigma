@@ -1,0 +1,55 @@
+---
+const lines = ['Todo problema tiene solución.', 'Solo hay que encontrarla.'];
+const headline = lines.join(' ');
+const words = lines.map((line) => line.split(' ').map((word) => Array.from(word)));
+---
+
+<section class="sticky top-0 isolate flex h-svh flex-col overflow-hidden" aria-labelledby="hero-title">
+  <div class="dot-grid absolute inset-0 -z-10" aria-hidden="true"></div>
+  <div class="band band-left -z-10" aria-hidden="true"></div>
+  <div class="band band-right -z-10" aria-hidden="true"></div>
+
+  <div class="mx-auto flex w-full max-w-6xl flex-1 flex-col items-center justify-center px-6 pt-20 text-center sm:px-10">
+    <p class="tag mb-8 sm:mb-10">[ 01 ] Estudio full stack</p>
+
+    <h1 id="hero-title" class="text-[clamp(2.5rem,9vw,7rem)] leading-[0.98] font-semibold tracking-[-0.055em] text-balance text-white">
+      <span class="sr-only">{headline}</span>
+      <span aria-hidden="true" data-decrypt>
+        {
+          words.map((lineWords, lineIndex) => (
+            <span class:list={['block', lineIndex === 1 && 'text-accent']}>
+              {lineWords.map((chars, wordIndex) => (
+                <>
+                  <span class="inline-block whitespace-nowrap">
+                    {chars.map((char) => (
+                      <span class="dc">{char}</span>
+                    ))}
+                  </span>
+                  {wordIndex < lineWords.length - 1 && ' '}
+                </>
+              ))}
+            </span>
+          ))
+        }
+      </span>
+    </h1>
+
+    <p class="mt-7 max-w-[21rem] text-[0.9375rem] leading-relaxed text-muted sm:mt-9 sm:max-w-md sm:text-base">
+      Agentes de IA, automatizaciones y software a medida. De la idea a producción.
+    </p>
+
+    <div class="mt-10 flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:gap-4">
+      <a href="#contacto" class="btn btn-primary">
+        Hablemos
+        <svg class="btn-icon size-4" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M2 8h11M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" />
+        </svg>
+      </a>
+      <a href="#proyectos" class="btn btn-secondary">Ver proyectos</a>
+    </div>
+  </div>
+
+  <div class="hero-shade pointer-events-none absolute inset-0 z-10 bg-ink" aria-hidden="true"></div>
+</section>
+
+<script src="../scripts/decrypt.ts"></script>

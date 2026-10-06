@@ -1,0 +1,20 @@
+---
+import Base from '../layouts/Base.astro';
+import Navbar from '../components/Navbar.astro';
+import Hero from '../components/Hero.astro';
+import Section from '../components/Section.astro';
+---
+
+<Base
+  title="Enigma Builders | Agentes de IA, automatización y software a medida"
+  description="Agentes de IA, automatizaciones y software a medida. De la idea a producción."
+>
+  <Navbar />
+  <main>
+    <Hero />
+    <Section id="servicios" index="02" title="Servicios" />
+    <Section id="proyectos" index="03" title="Proyectos" />
+    <Section id="nosotros" index="04" title="Nosotros" />
+    <Section id="contacto" index="05" title="Contacto" />
+  </main>
+</Base>

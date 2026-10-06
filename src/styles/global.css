@@ -1,0 +1,264 @@
+@import "tailwindcss";
+
+@theme {
+  --color-*: initial;
+  --color-ink: #08061a;
+  --color-brand: #4310e3;
+  --color-accent: #dcd9d0;
+  --color-graphite: #2a2926;
+  --color-white: #ffffff;
+
+  --font-*: initial;
+  --font-sans: "Lexend Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --color-surface: color-mix(in oklab, var(--color-ink) 90%, var(--color-white));
+  --color-line: color-mix(in oklab, var(--color-white) 10%, transparent);
+  --color-line-strong: color-mix(in oklab, var(--color-white) 18%, transparent);
+  --color-muted: color-mix(in oklab, var(--color-white) 62%, transparent);
+  --color-brand-hover: color-mix(in oklab, var(--color-brand) 82%, var(--color-white));
+  --color-brand-soft: color-mix(in oklab, var(--color-brand) 65%, var(--color-white));
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@layer base {
+  html {
+    background-color: var(--color-ink);
+    color: var(--color-white);
+    color-scheme: dark;
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background-color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: clip;
+  }
+
+  html.is-locked {
+    overflow: hidden;
+  }
+
+  :focus-visible {
+    outline: 1px solid var(--focus-color, var(--color-accent));
+    outline-offset: 3px;
+  }
+
+  ::selection {
+    background-color: var(--color-brand);
+    color: var(--color-white);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+}
+
+@utility tag {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--tag-color, var(--color-accent));
+}
+
+@layer components {
+  .surface-light {
+    background-color: var(--color-accent);
+    color: var(--color-graphite);
+    --tag-color: color-mix(in oklab, var(--color-graphite) 70%, transparent);
+    --focus-color: var(--color-graphite);
+  }
+
+  .surface-light ::selection {
+    background-color: var(--color-brand);
+    color: var(--color-white);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.625rem;
+    height: 3rem;
+    padding-inline: 1.5rem;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    border: 1px solid transparent;
+    transition:
+      background-color 0.2s ease,
+      border-color 0.2s ease,
+      color 0.2s ease;
+  }
+
+  .btn-primary {
+    background-color: var(--color-brand);
+    color: var(--color-white);
+  }
+
+  .btn-primary:hover {
+    background-color: var(--color-brand-hover);
+  }
+
+  .btn-secondary {
+    border-color: var(--color-line-strong);
+    color: var(--color-white);
+  }
+
+  .btn-secondary:hover {
+    border-color: color-mix(in oklab, var(--color-accent) 55%, transparent);
+    background-color: color-mix(in oklab, var(--color-white) 4%, transparent);
+  }
+
+
+
+  .dot-grid {
+    background-image: radial-gradient(
+      color-mix(in oklab, var(--color-white) 11%, transparent) 1px,
+      transparent 1.5px
+    );
+    background-size: 22px 22px;
+    background-position: center top;
+    mask-image: radial-gradient(ellipse 75% 65% at 50% 45%, var(--color-ink) 30%, transparent 100%);
+  }
+
+  .band {
+    position: absolute;
+    inset-block: 0;
+    width: clamp(3.5rem, 15vw, 18rem);
+    pointer-events: none;
+    background-image:
+      repeating-linear-gradient(
+        90deg,
+        color-mix(in oklab, var(--color-brand) 55%, transparent) 0 1px,
+        transparent 1px 12px
+      ),
+      linear-gradient(
+        180deg,
+        transparent 0%,
+        color-mix(in oklab, var(--color-brand) 70%, transparent) 45%,
+        color-mix(in oklab, var(--color-brand) 35%, transparent) 80%,
+        transparent 100%
+      );
+  }
+
+  .band::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url("/noise.svg");
+    background-size: 240px 240px;
+    opacity: 0.22;
+    mix-blend-mode: overlay;
+  }
+
+  .band-left {
+    left: 0;
+    mask-image: linear-gradient(90deg, var(--color-ink) 0%, transparent 100%);
+  }
+
+  .band-right {
+    right: 0;
+    mask-image: linear-gradient(270deg, var(--color-ink) 0%, transparent 100%);
+  }
+
+  .hero-shade {
+    opacity: 0;
+  }
+
+  @supports (animation-timeline: scroll()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .hero-shade {
+        animation: shade linear both;
+        animation-timeline: scroll(root block);
+        animation-range: 0 100svh;
+      }
+    }
+  }
+
+  .dc {
+    position: relative;
+  }
+
+  .dc.is-scrambling {
+    color: transparent;
+  }
+
+  .dc.is-scrambling::after {
+    content: attr(data-c);
+    position: absolute;
+    inset: 0;
+    text-align: center;
+    color: var(--color-brand-soft);
+  }
+
+  @media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
+    [data-decrypt]:not(.is-ready) {
+      opacity: 0;
+      animation: reveal 0s 1.5s forwards;
+    }
+  }
+
+  .drawer {
+    transform: translateX(100%);
+    visibility: hidden;
+    transition:
+      transform 0.45s var(--ease-out-expo),
+      visibility 0s linear 0.45s;
+  }
+
+  .drawer[data-open] {
+    transform: translateX(0);
+    visibility: visible;
+    transition: transform 0.45s var(--ease-out-expo);
+  }
+
+  .drawer-backdrop {
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity 0.3s ease,
+      visibility 0s linear 0.3s;
+  }
+
+  .drawer-backdrop[data-open] {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.3s ease;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .drawer,
+    .drawer[data-open],
+    .drawer-backdrop,
+    .drawer-backdrop[data-open] {
+      transition: none;
+    }
+  }
+
+  @media (scripting: none) {
+    [data-menu-toggle] {
+      display: none;
+    }
+  }
+}
+
+@keyframes shade {
+  to {
+    opacity: 0.85;
+  }
+}
+
+@keyframes reveal {
+  to {
+    opacity: 1;
+  }
+}
