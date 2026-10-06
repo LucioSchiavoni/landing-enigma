@@ -1,0 +1,102 @@
+---
+import { projects } from '../data/projects';
+---
+
+<section id="proyectos" class="surface-light relative z-20 border-t border-brand" aria-labelledby="proyectos-title">
+  <div class="flex min-h-svh w-full flex-col px-3 pt-24 pb-3 sm:px-5 sm:pb-5 lg:h-svh lg:min-h-[42rem] lg:px-6 lg:pt-28 lg:pb-6">
+    <div>
+      <p class="tag">[ 03 ] Proyectos</p>
+      <h2 id="proyectos-title" class="mt-3 text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">Proyectos</h2>
+    </div>
+
+    <div class="projects mt-6 lg:mt-8 lg:min-h-0 lg:flex-1" data-projects data-active="0">
+      {
+        projects.map((project, i) => (
+          <div class="project" data-project data-open={i === 0 ? '' : undefined}>
+            <button
+              type="button"
+              id={`proyecto-${project.index}-boton`}
+              class="project-trigger"
+              aria-expanded={i === 0 ? 'true' : 'false'}
+              aria-controls={`proyecto-${project.index}-panel`}
+              data-project-trigger
+            >
+              <span class="project-index">
+                <span class="sr-only">Proyecto </span>
+                <span aria-hidden="true">[ </span>
+                {project.index}
+                <span aria-hidden="true"> ]</span>
+              </span>
+              <span class="project-label">{project.name}</span>
+              <span class="project-arrow" aria-hidden="true">
+                <svg class="size-3.5" viewBox="0 0 16 16" fill="none">
+                  <path d="M2 8h11M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" />
+                </svg>
+              </span>
+            </button>
+
+            <div
+              id={`proyecto-${project.index}-panel`}
+              class="project-content"
+              role="region"
+              aria-labelledby={`proyecto-${project.index}-boton`}
+              data-project-content
+            >
+              <div class="project-body">
+                <figure class="project-shot">
+                  {project.media?.type === 'image' && (
+                    <img src={project.media.src} alt={project.media.alt} loading="lazy" decoding="async" class="project-media" />
+                  )}
+                  {project.media?.type === 'video' && (
+                    <video
+                      class="project-media"
+                      src={project.media.src}
+                      poster={project.media.poster}
+                      aria-label={project.media.alt}
+                      muted
+                      loop
+                      playsinline
+                      preload={i === 0 ? 'auto' : 'none'}
+                      data-project-video
+                    />
+                  )}
+                  {!project.media && (
+                    <>
+                      <div class="dot-grid absolute inset-0" aria-hidden="true" />
+                      <figcaption class="tag relative">[ Captura · PENDIENTE ]</figcaption>
+                    </>
+                  )}
+                  <span class="corner corner-tl" aria-hidden="true" />
+                  <span class="corner corner-tr" aria-hidden="true" />
+                  <span class="corner corner-bl" aria-hidden="true" />
+                  <span class="corner corner-br" aria-hidden="true" />
+                </figure>
+
+                <div class="project-info">
+                  <div class="min-w-0">
+                    <h3 class="text-2xl leading-tight font-semibold tracking-[-0.04em] lg:text-3xl">{project.name}</h3>
+                    <p class="mt-2 max-w-xl text-[0.9375rem] leading-relaxed text-muted">{project.description}</p>
+                  </div>
+                  <div class="shrink-0">
+                    {project.url ? (
+                      <a href={project.url} class="btn btn-primary" rel="noopener" target="_blank" aria-label={`Ver proyecto ${project.name} (se abre en una pestaña nueva)`}>
+                        Ver proyecto
+                        <svg class="size-4" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                          <path d="M4 12 12 4M5.5 4H12v6.5" stroke="currentColor" stroke-width="1.5" />
+                        </svg>
+                      </a>
+                    ) : (
+                      <p class="tag">[ Enlace · PENDIENTE ]</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<script src="../scripts/projects.ts"></script>

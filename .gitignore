@@ -5,3 +5,6 @@ dist/
 .env.*
 npm-debug.log*
 .DS_Store
+
+tools/.auth/
+tools/out/

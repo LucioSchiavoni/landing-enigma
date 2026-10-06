@@ -1,7 +1,12 @@
 ---
-const lines = ['Todo problema tiene solución.', 'Solo hay que encontrarla.'];
-const headline = lines.join(' ');
-const words = lines.map((line) => line.split(' ').map((word) => Array.from(word)));
+const phrases = [
+  ['Lleva tu negocio', 'a otro nivel'],
+  ['Software que', 'trabaja por ti'],
+  ['Tu negocio en', 'piloto automático'],
+  ['Del problema', 'a la solución'],
+];
+const headline = phrases[0].join(' ');
+const layers = phrases.map((lines) => lines.map((line) => line.split(' ').map((word) => Array.from(word))));
 ---
 
 <section class="sticky top-0 isolate flex h-svh flex-col overflow-hidden" aria-labelledby="hero-title">
@@ -14,19 +19,23 @@ const words = lines.map((line) => line.split(' ').map((word) => Array.from(word)
 
     <h1 id="hero-title" class="text-[clamp(2.5rem,9vw,7rem)] leading-[0.98] font-semibold tracking-[-0.055em] text-balance text-white">
       <span class="sr-only">{headline}</span>
-      <span aria-hidden="true" data-decrypt>
+      <span class="headline" aria-hidden="true" data-decrypt>
         {
-          words.map((lineWords, lineIndex) => (
-            <span class:list={['block', lineIndex === 1 && 'text-accent']}>
-              {lineWords.map((chars, wordIndex) => (
-                <>
-                  <span class="inline-block whitespace-nowrap">
-                    {chars.map((char) => (
-                      <span class="dc">{char}</span>
-                    ))}
-                  </span>
-                  {wordIndex < lineWords.length - 1 && ' '}
-                </>
+          layers.map((words, phraseIndex) => (
+            <span class:list={['headline-phrase', phraseIndex === 0 && 'is-active']} data-phrase>
+              {words.map((lineWords, lineIndex) => (
+                <span class:list={['block', lineIndex === 1 && 'text-accent']}>
+                  {lineWords.map((chars, wordIndex) => (
+                    <>
+                      <span class="inline-block whitespace-nowrap">
+                        {chars.map((char) => (
+                          <span class="dc">{char}</span>
+                        ))}
+                      </span>
+                      {wordIndex < lineWords.length - 1 && ' '}
+                    </>
+                  ))}
+                </span>
               ))}
             </span>
           ))

@@ -1,0 +1,65 @@
+---
+const contacts = [
+  { name: 'Lucio', role: 'Desarrollo y ciberseguridad', code: '0770.9914.598' },
+  { name: 'Maxi', role: 'Datos y automatización con IA', code: '7840.9712.598' },
+];
+---
+
+<section id="contacto" class="contact relative z-30 isolate border-t border-brand" aria-labelledby="contacto-title">
+  <div class="dot-grid absolute inset-0 -z-10" aria-hidden="true"></div>
+  <div class="band band-left -z-10" aria-hidden="true"></div>
+  <div class="band band-right -z-10" aria-hidden="true"></div>
+
+  <div class="mx-auto flex min-h-[80svh] w-full max-w-4xl flex-col items-center justify-center px-6 pt-28 pb-28 text-center sm:px-10">
+    <p class="tag" data-reveal>[ 05 ] Contacto</p>
+    <h2 id="contacto-title" class="mt-6 text-[clamp(3rem,10vw,6.5rem)] leading-[0.95] font-semibold tracking-[-0.055em] text-white" data-reveal data-reveal-delay="1">
+      Hablemos.
+    </h2>
+    <p class="mt-6 max-w-xl text-base leading-relaxed text-muted sm:text-lg" data-reveal data-reveal-delay="2">
+      ¿Tienes un proceso que te quita tiempo, una idea que quieres validar o un sistema que necesita salir de la lista de pendientes?
+    </p>
+
+    <div class="contact-actions mt-10" data-reveal data-reveal-delay="2">
+      <div class="wa">
+        <button type="button" class="btn btn-primary w-full sm:w-auto" aria-expanded="false" aria-controls="whatsapp-menu" data-wa-toggle>
+          Escríbenos por WhatsApp
+          <svg class="wa-chevron size-4" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="m4 6 4 4 4-4" stroke="currentColor" stroke-width="1.5" />
+          </svg>
+        </button>
+        <div id="whatsapp-menu" class="wa-menu" hidden data-wa-menu data-wa-text="Hola, vengo de la web de Enigma Builders y quiero contaros un proyecto.">
+          <p class="tag wa-menu-title">¿Con quién quieres hablar?</p>
+          <ul>
+            {
+              contacts.map((contact) => (
+                <li>
+                  <a class="wa-option" data-wa={contact.code} target="_blank" rel="noopener">
+                    <span class="flex flex-col text-left">
+                      <span class="font-medium">{contact.name}</span>
+                      <span class="text-sm text-muted">{contact.role}</span>
+                    </span>
+                    <svg class="size-4 shrink-0" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <path d="M4 12 12 4M5.5 4H12v6.5" stroke="currentColor" stroke-width="1.5" />
+                    </svg>
+                    <span class="sr-only">(se abre WhatsApp en una pestaña nueva)</span>
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </div>
+
+      <a href="https://instagram.com/enigma.builders" class="btn btn-secondary w-full sm:w-auto" target="_blank" rel="noopener">
+        Instagram
+        <span class="sr-only">de Enigma Builders (se abre en una pestaña nueva)</span>
+        <svg class="size-4" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M4 12 12 4M5.5 4H12v6.5" stroke="currentColor" stroke-width="1.5" />
+        </svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<script src="../scripts/whatsapp.ts"></script>
+<script src="../scripts/reveal.ts"></script>

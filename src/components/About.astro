@@ -1,0 +1,91 @@
+---
+import { team } from '../data/team';
+
+const reasons = [
+  {
+    index: '01',
+    title: 'Seguridad desde el primer día',
+    text: 'Además de desarrollar, tenemos experiencia real en seguridad informática. Tu proyecto nace protegido, no se parchea al final.',
+  },
+  { index: '02', title: 'Trato directo con quien construye', text: 'Hablas con las personas que escriben el código, no con un comercial.' },
+  { index: '03', title: 'Avances visibles', text: 'Trabajamos por iteraciones cortas, con algo funcionando que puedes ver y probar.' },
+  { index: '04', title: 'Lo construido es tuyo', text: 'El código y los accesos quedan en tus manos.' },
+  { index: '05', title: 'Cualquier escala', text: 'Desde una automatización puntual hasta una plataforma completa.' },
+];
+---
+
+<section id="nosotros" class="surface-light relative z-20 border-t border-brand" aria-labelledby="nosotros-title">
+  <div class="w-full px-3 pt-24 pb-16 sm:px-5 lg:px-6 lg:pt-28 lg:pb-24">
+    <p class="tag">[ 04 ] Nosotros</p>
+    <h2 id="nosotros-title" class="mt-3 text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">Nosotros</h2>
+
+    <div class="about mt-6 lg:mt-8">
+      <div class="flex flex-col gap-6">
+        <p class="max-w-xl text-lg leading-relaxed text-graphite/80" data-reveal>
+          Somos un estudio de dos personas que construye software de punta a punta. Trabajamos directamente con quien necesita resolver un problema: sin intermediarios, sin capas de gestión y sin reuniones que no llevan a nada.
+        </p>
+
+        <ul class="team" data-reveal-stagger>
+          {
+            team.map((member) => (
+              <li class="member">
+                <div class="member-photo">
+                  {member.photo ? (
+                    <img src={member.photo} alt={`Retrato de ${member.name}`} width="600" height="600" loading="lazy" decoding="async" />
+                  ) : (
+                    <>
+                      <div class="dot-grid absolute inset-0" aria-hidden="true" />
+                      <span class="member-initials" aria-hidden="true">
+                        {member.initials}
+                      </span>
+                      <span class="tag member-pending">[ Foto · PENDIENTE ]</span>
+                    </>
+                  )}
+                  <span class="corner corner-tl" aria-hidden="true" />
+                  <span class="corner corner-tr" aria-hidden="true" />
+                  <span class="corner corner-bl" aria-hidden="true" />
+                  <span class="corner corner-br" aria-hidden="true" />
+                </div>
+                <div class="member-info">
+                  <h3 class="text-lg leading-tight font-semibold tracking-[-0.03em]">{member.name}</h3>
+                  <p class="text-sm leading-snug text-muted">{member.role}</p>
+                  <a
+                    href={member.linkedin}
+                    class="member-link"
+                    target="_blank"
+                    rel="noopener"
+                    aria-label={`LinkedIn de ${member.name} (se abre en una pestaña nueva)`}
+                  >
+                    LinkedIn
+                    <svg class="size-3" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <path d="M4 12 12 4M5.5 4H12v6.5" stroke="currentColor" stroke-width="1.5" />
+                    </svg>
+                  </a>
+                </div>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="tag" data-reveal>[ Por qué trabajar con nosotros ]</h3>
+        <ol class="reasons mt-4" data-reveal-stagger>
+          {
+            reasons.map((reason) => (
+              <li class="reason">
+                <span class="tag">[ {reason.index} ]</span>
+                <div>
+                  <h4 class="text-lg leading-snug font-semibold tracking-[-0.03em]">{reason.title}</h4>
+                  <p class="mt-1 text-[0.9375rem] leading-relaxed text-graphite/70">{reason.text}</p>
+                </div>
+              </li>
+            ))
+          }
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script src="../scripts/reveal.ts"></script>
