@@ -1,4 +1,5 @@
 ---
+import { Image } from 'astro:assets';
 import { team } from '../data/team';
 
 const reasons = [
@@ -31,7 +32,13 @@ const reasons = [
               <li class="member">
                 <div class="member-photo">
                   {member.photo ? (
-                    <img src={member.photo} alt={`Retrato de ${member.name}`} width="600" height="600" loading="lazy" decoding="async" />
+                    <Image
+                      src={member.photo}
+                      alt={`Retrato de ${member.name}`}
+                      widths={[320, 480, 640, 900]}
+                      sizes="(min-width: 64rem) 22rem, 46vw"
+                      loading="lazy"
+                    />
                   ) : (
                     <>
                       <div class="dot-grid absolute inset-0" aria-hidden="true" />
