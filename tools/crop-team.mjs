@@ -1,8 +1,8 @@
 import sharp from 'sharp';
 
 const crops = [
-  { from: 'src/assets/team/original/lucio.jpg', to: 'src/assets/team/lucio.jpg', left: 0, top: 37, size: 774 },
-  { from: 'src/assets/team/original/maxi.jpeg', to: 'src/assets/team/maxi.jpg', left: 320, top: 240, size: 1000 },
+  { from: 'src/assets/team/original/lucio.png', to: 'src/assets/team/lucio.jpg', left: 0, top: 0, size: 1254 },
+  { from: 'src/assets/team/original/maxi.jpeg', to: 'src/assets/team/maxi.jpg', left: 0, top: 0, size: 1254 },
 ];
 
 for (const { from, to, left, top, size } of crops) {
