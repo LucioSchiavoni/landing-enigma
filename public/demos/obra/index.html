@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="es">
+<meta charset="utf-8">
+<title>Casa Arazá · Demo de Enigma Builders</title>
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,200..800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: la obra queda fija a pantalla completa y el scroll la va construyendo etapa por etapa;
+   los textos suben por encima como láminas de un legajo. Después, ficha técnica e índice en flujo normal. */
+:root {
+  --bg: #111213;        /* carbón: el negro de la foto de noche */
+  --ink: #ebe9e4;       /* hormigón claro */
+  --muted: #9b9a95;
+  --oak: #c48b55;       /* madera del revestimiento */
+  --line: rgba(235, 233, 228, .18);
+  --veil: rgba(17, 18, 19, .72);
+  --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --gutter: clamp(16px, 4vw, 56px);
+  color-scheme: dark;
+}
+* { box-sizing: border-box }
+html { scroll-behavior: smooth }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--display); font-stretch: 100%; font-size: 17px; line-height: 1.55; -webkit-font-smoothing: antialiased }
+a { color: inherit }
+:focus-visible { outline: 2px solid var(--oak); outline-offset: 3px }
+
+/* Cabecera */
+.top { position: fixed; z-index: 20; left: 0; right: 0; top: 0; padding: calc(env(safe-area-inset-top, 0px) + 18px) var(--gutter) 18px; display: flex; align-items: center; justify-content: space-between; gap: 16px; background: linear-gradient(rgba(17,18,19,.78), transparent); transition: background .3s }
+.top.solid { background: var(--bg); border-bottom: 1px solid var(--line) }
+.brand { font-weight: 700; font-stretch: 125%; letter-spacing: .02em; font-size: 15px; text-transform: uppercase; display: flex; align-items: center; gap: 12px }
+.demo { font-family: var(--mono); font-size: 10px; letter-spacing: .14em; border: 1px solid rgba(235,233,228,.4); padding: 3px 8px; color: var(--ink); background: var(--veil); font-weight: 400; font-stretch: 100% }
+.nav { display: flex; gap: 28px; font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase }
+.nav a { text-decoration: none; opacity: .8 }
+.nav a:hover { opacity: 1 }
+.top-der { display: flex; align-items: center; gap: 28px }
+.volver { font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; text-decoration: none; white-space: nowrap; color: var(--ink); border: 1px solid rgba(235,233,228,.3); padding: 6px 10px; background: var(--veil); transition: color .2s, border-color .2s }
+.volver:hover { color: var(--ink); border-color: var(--oak) }
+footer a { text-underline-offset: 3px }
+
+/* Escenario fijo con las etapas apiladas */
+.stage { position: fixed; inset: 0; z-index: 0; overflow: hidden; background: var(--bg) }
+.stage img { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; object-fit: cover; object-position: 50% 46%; will-change: opacity, transform; transform-origin: 50% 55% }
+.stage::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(17,18,19,.94) 0%, rgba(17,18,19,.6) 34%, rgba(17,18,19,.12) 62%, transparent 75%); pointer-events: none }
+/* Pantallas apaisadas: cada etapa tiene su versión ancha (img/*-ancho.jpg: los costados se completaron con IA
+   a partir del terreno), así la obra va a pantalla completa sin recortar la casa. El interior no tiene versión ancha. */
+.stage picture { display: contents }
+@media (min-aspect-ratio: 1/1) and (min-width: 761px) {
+  .stage img { object-position: 50% 42% }
+  .stage img.interior { object-position: 50% 62% }
+  .stage::after { background: linear-gradient(to right, rgba(17,18,19,.88) 0%, rgba(17,18,19,.55) 28%, rgba(17,18,19,.05) 50%, transparent 60%), linear-gradient(rgba(17,18,19,.55), transparent 22%), linear-gradient(to top, rgba(17,18,19,.5), transparent 25%) }
+  .chapter { align-items: center; padding-bottom: 0 }
+  .sheet { max-width: min(560px, 38vw) }
+  h1 { font-size: min(6vw, 10.5vh) }
+  h2 { font-size: min(4.6vw, 8.5vh) }
+}
+/* Avance de obra */
+.rail { position: fixed; z-index: 15; right: var(--gutter); top: 50%; transform: translateY(-50%); height: min(52vh, 420px); display: grid; grid-template-columns: auto 2px; gap: 14px; font-family: var(--mono); font-size: 11px; letter-spacing: .08em }
+.rail-ticks { position: relative; text-align: right; color: var(--muted) }
+.rail-ticks span { position: absolute; right: 0; transform: translateY(-50%); white-space: nowrap; transition: color .3s }
+.rail-ticks span.on { color: var(--ink) }
+.rail-bar { background: var(--line); position: relative }
+.rail-fill { position: absolute; left: 0; right: 0; top: 0; background: var(--oak); height: 0 }
+.meter { position: fixed; z-index: 15; left: var(--gutter); top: calc(env(safe-area-inset-top, 0px) + 64px); font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink); display: flex; gap: 10px; align-items: baseline; background: var(--veil); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); padding: 8px 12px; transition: opacity .3s }
+.meter.off, .rail.off { opacity: 0; pointer-events: none }
+.meter b { color: var(--ink); font-weight: 500; font-size: 13px; font-variant-numeric: tabular-nums }
+
+/* Capítulos que suben sobre la obra */
+.chapters { position: relative; z-index: 10 }
+.chapter { min-height: 135vh; display: flex; align-items: flex-end; padding: 0 var(--gutter) 18vh }
+.chapter:first-child { min-height: 115vh }
+.sheet { max-width: 560px; min-width: 0; text-shadow: 0 1px 24px rgba(17,18,19,.55) }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--oak); display: flex; gap: 14px; align-items: center }
+.eyebrow::before { content: ""; width: 28px; height: 1px; background: currentColor }
+h1, h2 { font-weight: 300; font-stretch: 112%; letter-spacing: -.025em; line-height: 1; margin: 18px 0 0; text-wrap: balance }
+h1 { font-size: clamp(46px, 8.4vw, 112px) }
+h2 { font-size: clamp(38px, 6vw, 76px) }
+h1 em, h2 em { font-style: normal; font-weight: 700; font-stretch: 62% }
+.sheet p { margin: 22px 0 0; font-size: clamp(17px, 1.5vw, 19px); color: var(--ink); opacity: .86; max-width: 46ch }
+.datum { margin-top: 26px; display: inline-flex; gap: 14px; align-items: baseline; font-family: var(--mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px }
+.datum b { color: var(--ink); font-size: 22px; font-weight: 500; letter-spacing: 0; text-transform: none }
+.hint { margin-top: 40px; font-family: var(--mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); display: flex; gap: 12px; align-items: center }
+.hint i { display: block; width: 1px; height: 38px; background: linear-gradient(var(--ink), transparent); animation: drip 2.2s ease-in-out infinite }
+@keyframes drip { 0%, 100% { transform: scaleY(.4); transform-origin: top } 50% { transform: scaleY(1); transform-origin: top } }
+
+/* Cota: línea de dimensión como en un plano */
+.cota { margin-top: 26px; display: grid; grid-template-columns: 1px 1fr 1px; align-items: center; width: min(340px, 100%); color: var(--oak); font-family: var(--mono); font-size: 13px }
+.cota::before, .cota::after { content: ""; height: 18px; background: currentColor }
+.cota span { position: relative; text-align: center; height: 1px; background: currentColor }
+.cota span b { position: relative; top: -12px; background: transparent; padding: 0 8px; font-weight: 500; letter-spacing: .06em }
+
+/* Flujo normal: ficha, índice, contacto */
+.after { position: relative; z-index: 12; background: var(--bg); padding: 120px var(--gutter) 64px; border-top: 1px solid var(--line) }
+.wrap { max-width: 1180px; margin: 0 auto; display: grid; gap: 110px }
+.section-head { display: grid; gap: 10px }
+.section-head h2 { font-size: clamp(34px, 4.6vw, 60px) }
+.ficha { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); border-top: 1px solid var(--line) }
+.ficha div { padding: 22px 22px 26px 0; border-bottom: 1px solid var(--line); min-width: 0 }
+.ficha dt { font-family: var(--mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted) }
+.ficha dd { margin: 8px 0 0; font-size: 21px; font-weight: 400; line-height: 1.3 }
+.indice { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 48px; align-items: start }
+.indice figure { margin: 0 }
+.indice img { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; display: block }
+.indice figcaption { margin-top: 12px; font-family: var(--mono); font-size: 12px; letter-spacing: .08em; color: var(--muted) }
+.obras { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums }
+.obras th { text-align: left; font-family: var(--mono); font-size: 11px; font-weight: 400; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); padding: 0 12px 12px 0; border-bottom: 1px solid var(--line) }
+.obras td { padding: 18px 12px 18px 0; border-bottom: 1px solid var(--line); vertical-align: baseline }
+.obras td:first-child { font-family: var(--mono); font-size: 13px; color: var(--muted) }
+.obras td:nth-child(2) { font-size: 20px }
+.obras td:last-child { text-align: right; font-family: var(--mono); font-size: 13px; padding-right: 0 }
+.obras tr.actual td:nth-child(2) { color: var(--oak) }
+.table-scroll { overflow-x: auto }
+.contacto { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 32px; align-items: end; border-top: 1px solid var(--line); padding-top: 48px }
+.contacto h2 { font-size: clamp(40px, 6.4vw, 88px) }
+.mail { font-family: var(--mono); font-size: 15px; letter-spacing: .04em; display: grid; gap: 10px; justify-items: start }
+.mail span { user-select: all; border-bottom: 1px solid var(--oak); padding-bottom: 4px }
+.mail small { color: var(--muted); font-size: 12px }
+footer { margin-top: 90px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 32px; font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted) }
+footer b { color: var(--ink); font-weight: 500 }
+
+@media (max-width: 760px) {
+  .nav { display: none }
+  .brand { font-size: 13px; gap: 8px; white-space: nowrap }
+  .volver { font-size: 10px; letter-spacing: .06em; padding: 5px 8px }
+  .volver .largo { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap }
+  .rail { display: none }
+  .chapter { padding-bottom: 12vh }
+  .indice, .contacto { grid-template-columns: 1fr }
+  .wrap { gap: 80px }
+  .after { padding-top: 88px }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto }
+  .stage img { transform: none !important }
+  .hint i { animation: none }
+}
+</style>
+
+<header class="top">
+  <div class="brand">Arazá Estudio <span class="demo">DEMO</span></div>
+  <div class="top-der">
+    <nav class="nav" aria-label="Secciones">
+      <a href="#ficha">Ficha</a><a href="#obras">Obras</a><a href="#contacto">Contacto</a>
+    </nav>
+    <a class="volver" href="/"><span aria-hidden="true">← </span><span class="largo">Volver a </span>Enigma Builders</a>
+  </div>
+</header>
+
+<div class="stage" aria-hidden="true">
+  <picture><source media="(min-aspect-ratio: 1/1) and (min-width: 761px)" srcset="img/1-terreno-ancho.jpg"><img src="img/1-terreno.jpg" alt=""></picture>
+  <picture><source media="(min-aspect-ratio: 1/1) and (min-width: 761px)" srcset="img/2-cimientos-ancho.jpg"><img src="img/2-cimientos.jpg" alt=""></picture>
+  <picture><source media="(min-aspect-ratio: 1/1) and (min-width: 761px)" srcset="img/3-estructura-ancho.jpg"><img src="img/3-estructura.jpg" alt=""></picture>
+  <picture><source media="(min-aspect-ratio: 1/1) and (min-width: 761px)" srcset="img/4-cerramientos-ancho.jpg"><img src="img/4-cerramientos.jpg" alt=""></picture>
+  <picture><source media="(min-aspect-ratio: 1/1) and (min-width: 761px)" srcset="img/5-terminada-ancho.jpg"><img src="img/5-terminada.jpg" alt=""></picture>
+  <picture><source media="(min-aspect-ratio: 1/1) and (min-width: 761px)" srcset="img/6-noche-ancho.jpg"><img src="img/6-noche.jpg" alt=""></picture>
+  <img src="img/7-interior.jpg" alt="" class="interior">
+</div>
+
+<div class="meter" id="meter">Avance de obra <b id="pct">0%</b> <span id="mes">Mes 0</span></div>
+<div class="rail" id="rail" aria-hidden="true">
+  <div class="rail-ticks" id="ticks"></div>
+  <div class="rail-bar"><div class="rail-fill" id="fill"></div></div>
+</div>
+
+<main class="chapters">
+  <section class="chapter">
+    <div class="sheet">
+      <div class="eyebrow">Casa Arazá · Canelones, Uruguay</div>
+      <h1>Una casa, de la <em>tierra</em> al techo.</h1>
+      <p>Seguí la obra completa en 14 meses: del replanteo en el pasto a la primera noche con las luces prendidas.</p>
+      <div class="hint"><i></i>Scrolleá para construirla</div>
+    </div>
+  </section>
+  <section class="chapter">
+    <div class="sheet">
+      <div class="eyebrow">Mes 2 · Platea</div>
+      <h2>Todo empieza <em>abajo</em>.</h2>
+      <p>Platea de hormigón armado sobre tosca compactada. Los hierros que asoman son el arranque de las columnas.</p>
+      <div class="datum"><b>25 cm</b> espesor de la platea</div>
+    </div>
+  </section>
+  <section class="chapter">
+    <div class="sheet">
+      <div class="eyebrow">Mes 5 · Estructura</div>
+      <h2>El voladizo, sin <em>columnas</em> abajo.</h2>
+      <p>Losas y vigas de hormigón visto. El volumen de arriba avanza sobre el jardín y deja una galería en sombra.</p>
+      <div class="cota" role="img" aria-label="Voladizo de 4,20 metros"><span><b>4,20 m</b></span></div>
+    </div>
+  </section>
+  <section class="chapter">
+    <div class="sheet">
+      <div class="eyebrow">Mes 9 · Cerramientos</div>
+      <h2>Madera, vidrio y <em>aire</em>.</h2>
+      <p>Revestimiento de eucalipto termotratado y aberturas de aluminio con doble vidriado hermético.</p>
+      <div class="datum"><b>4+12+4</b> DVH en todas las aberturas</div>
+    </div>
+  </section>
+  <section class="chapter">
+    <div class="sheet">
+      <div class="eyebrow">Mes 14 · Entrega</div>
+      <h2>Casa <em>Arazá</em>.</h2>
+      <p>Dos plantas abiertas al jardín del sur. El hormigón queda a la vista, adentro y afuera.</p>
+      <div class="datum"><b>210 m²</b> en un terreno de 1.200 m²</div>
+    </div>
+  </section>
+  <section class="chapter">
+    <div class="sheet">
+      <div class="eyebrow">Al caer el sol</div>
+      <h2>La casa se <em>enciende</em>.</h2>
+      <p>La iluminación se proyectó junto con la estructura: luz cálida, sin artefactos a la vista.</p>
+      <div class="datum"><b>2700 K</b> en toda la casa</div>
+    </div>
+  </section>
+  <section class="chapter">
+    <div class="sheet">
+      <div class="eyebrow">Adentro</div>
+      <h2>Un living que mira al <em>jardín</em>.</h2>
+      <p>Cielorraso de madera, muros y piso de hormigón, y un ventanal de piso a techo que se corre entero.</p>
+      <div class="datum"><b>8,40 m</b> de ventanal corrido</div>
+    </div>
+  </section>
+</main>
+
+<div class="after">
+  <div class="wrap">
+    <section id="ficha" class="section-head">
+      <div class="eyebrow">Ficha técnica</div>
+      <h2>Casa Arazá en números</h2>
+      <dl class="ficha">
+        <div><dt>Superficie</dt><dd>210 m² en dos plantas</dd></div>
+        <div><dt>Terreno</dt><dd>1.200 m², Canelones</dd></div>
+        <div><dt>Plazo de obra</dt><dd>14 meses</dd></div>
+        <div><dt>Estructura</dt><dd>Hormigón armado visto</dd></div>
+        <div><dt>Revestimiento</dt><dd>Eucalipto termotratado</dd></div>
+        <div><dt>Aberturas</dt><dd>Aluminio con DVH</dd></div>
+        <div><dt>Voladizo</dt><dd>4,20 m sobre el jardín</dd></div>
+        <div><dt>Año</dt><dd>2026</dd></div>
+      </dl>
+    </section>
+
+    <section id="obras" class="indice">
+      <figure>
+        <img src="img/cabana.jpg" alt="Refugio de madera negra con un ventanal entre pinos y niebla" loading="lazy">
+        <figcaption>Refugio Pinar · Maldonado · 2025</figcaption>
+      </figure>
+      <div class="section-head">
+        <div class="eyebrow">Índice de obras</div>
+        <h2>Otras casas del estudio</h2>
+        <div class="table-scroll">
+          <table class="obras">
+            <thead><tr><th>Año</th><th>Obra</th><th>Lugar</th><th>m²</th></tr></thead>
+            <tbody>
+              <tr class="actual"><td>2026</td><td>Casa Arazá</td><td>Canelones</td><td>210</td></tr>
+              <tr><td>2025</td><td>Refugio Pinar</td><td>Maldonado</td><td>48</td></tr>
+              <tr><td>2024</td><td>Casa Patio</td><td>Montevideo</td><td>165</td></tr>
+              <tr><td>2023</td><td>Edificio Ceibo</td><td>Montevideo</td><td>1.840</td></tr>
+              <tr><td>2022</td><td>Casa Médanos</td><td>Rocha</td><td>132</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="contacto" class="contacto">
+      <div class="section-head">
+        <div class="eyebrow">Contacto</div>
+        <h2>¿Tenés un <em>terreno</em>?</h2>
+      </div>
+      <div class="mail">
+        <span>hola@araza-estudio.demo</span>
+        <small>Contanos dónde está y qué querés construir.</small>
+      </div>
+    </section>
+  </div>
+  <footer>
+    <span>Sitio de demostración · estudio y obras ficticios</span>
+    <span>Diseño y desarrollo <a href="/"><b>Enigma Builders</b></a></span>
+  </footer>
+</div>
+
+<script>
+// Cada capítulo corresponde a una etapa. `g` es la posición global del scroll en
+// unidades de etapa (0 = terreno, 6 = interior); las fotos se funden en cada borde.
+const MESES = [0, 2, 5, 9, 14, 14, 14];
+const TICKS = ['Mes 0', 'Mes 2', 'Mes 5', 'Mes 9', 'Mes 14'];
+const imgs = [...document.querySelectorAll('.stage img')];
+const chapters = [...document.querySelectorAll('.chapter')];
+const ticksEl = document.getElementById('ticks');
+const fill = document.getElementById('fill');
+const pct = document.getElementById('pct');
+const mes = document.getElementById('mes');
+const cabecera = document.querySelector('.top');
+const after = document.querySelector('.after');
+const meter = document.getElementById('meter');
+const rail = document.getElementById('rail');
+const quieto = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const FADE = 0.38;
+
+ticksEl.innerHTML = TICKS.map((t, i) => `<span style="top:${(i / (TICKS.length - 1)) * 100}%">${t}</span>`).join('');
+const tickEls = [...ticksEl.children];
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+
+function frame() {
+  const vh = innerHeight;
+  let g = 0;
+  chapters.forEach((c, i) => {
+    const r = c.getBoundingClientRect();
+    const t = clamp((vh * 0.62 - r.top) / r.height, 0, 1);
+    if (r.top < vh * 0.62) g = i + t;
+  });
+  g = clamp(g - 0.55, 0, imgs.length - 1);
+  imgs.forEach((img, k) => {
+    const o = k === 0 ? 1 : clamp((g - k + FADE) / FADE, 0, 1);
+    img.style.opacity = o;
+    if (!quieto) {
+      const s = 1.03 - 0.03 * clamp((g - k + FADE) / (1 + FADE), 0, 1);
+      img.style.transform = `scale(${s.toFixed(4)})`;
+    }
+  });
+  const i = Math.floor(g), f = g - i;
+  const m = MESES[i] + (MESES[Math.min(i + 1, MESES.length - 1)] - MESES[i]) * f;
+  const p = Math.round((m / 14) * 100);
+  pct.textContent = p + '%';
+  mes.textContent = 'Mes ' + Math.round(m);
+  fill.style.height = clamp(m / 14, 0, 1) * 100 + '%';
+  const fuera = after.getBoundingClientRect().top < vh * 0.4;
+  cabecera.classList.toggle('solid', after.getBoundingClientRect().top < 72);
+  meter.classList.toggle('off', fuera);
+  rail.classList.toggle('off', fuera);
+  tickEls.forEach((el, k) => el.classList.toggle('on', m >= [0, 2, 5, 9, 14][k] - 0.01));
+}
+
+let pend = false;
+const pedir = () => { if (!pend) { pend = true; requestAnimationFrame(() => { pend = false; frame(); }); } };
+addEventListener('scroll', pedir, { passive: true });
+addEventListener('resize', pedir);
+frame();
+</script>

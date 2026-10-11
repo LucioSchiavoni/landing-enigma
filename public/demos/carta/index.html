@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="es">
+<meta charset="utf-8">
+<title>Tizón Parrilla · Demo de Enigma Builders</title>
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: carta a pantalla completa que se recorre de a un plato por pantalla (scroll con snap).
+   Cada sección tiene su fondo en movimiento fijo detrás (brasas, parrilla, pastas, cócteles) y
+   abre con una portada con su índice; el pedido se arma abajo como una comanda de cocina. */
+:root {
+  --bg: #120d0a;        /* madera ahumada */
+  --surface: #1e1612;
+  --ink: #f4ebdf;
+  --muted: #b3a294;
+  --ember: #ec6a32;     /* brasa */
+  --line: rgba(244, 235, 223, .16);
+  --scrim: rgba(18, 13, 10, .62);
+  --paper: #efe6d8;     /* papel de comanda */
+  --paper-ink: #1e1713;
+  --serif: "Young Serif", Georgia, "Times New Roman", serif;
+  --sans: "Figtree", "Segoe UI", Arial, sans-serif;
+  --mono: "DM Mono", ui-monospace, Consolas, monospace;
+  --gutter: clamp(16px, 5vw, 64px);
+  --top: calc(env(safe-area-inset-top, 0px) + 104px);   /* cabecera + categorías */
+  --bar: calc(env(safe-area-inset-bottom, 0px) + 68px); /* barra del pedido */
+  color-scheme: dark;
+}
+* { box-sizing: border-box }
+html { scroll-snap-type: y mandatory; background: var(--bg) }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.5; -webkit-font-smoothing: antialiased }
+button { font: inherit; color: inherit; cursor: pointer }
+:focus-visible { outline: 2px solid var(--ember); outline-offset: 3px }
+
+/* Fondos fijos por sección */
+.fondos { position: fixed; inset: 0; z-index: 0; overflow: hidden; background: var(--bg) }
+.fondo { position: absolute; inset: 0; opacity: 0; transition: opacity .7s ease }
+.fondo.on { opacity: 1 }
+.fondo video, .fondo img { position: absolute; inset: -2%; width: 104%; height: 104%; max-width: none; object-fit: cover }
+.fondo .pared { display: none; position: absolute; inset: 0; background-repeat: repeat-x; background-position: center; background-size: auto 100% }
+.fondo.blur video, .fondo.blur img { filter: blur(14px) saturate(1.1); inset: -6%; width: 112%; height: 112% }
+.fondos::after { content: ""; position: absolute; inset: 0; background: radial-gradient(120% 80% at 50% 45%, rgba(18,13,10,.25), rgba(18,13,10,.82)); transition: background .5s }
+body.en-plato .fondos::after { background: radial-gradient(120% 80% at 50% 45%, rgba(18,13,10,.55), rgba(18,13,10,.92)) }
+
+/* Cabecera y categorías */
+.top { position: fixed; z-index: 30; left: 0; right: 0; top: 0; padding-top: env(safe-area-inset-top, 0px); background: linear-gradient(rgba(18,13,10,.92), rgba(18,13,10,.55) 70%, transparent) }
+.top-in { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px var(--gutter) 6px }
+.marca { font-family: var(--serif); font-size: 26px; line-height: 1; text-decoration: none; color: var(--ink) }
+.mesa { font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; border: 1px solid var(--line); padding: 5px 9px; background: rgba(18,13,10,.5) }
+.mesa b { color: var(--ember); font-weight: 500 }
+.top-izq, .top-der { display: flex; align-items: center; gap: 10px; min-width: 0 }
+.demo { font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--ember); border: 1px solid rgba(236,106,50,.55); padding: 3px 6px; line-height: 1.3 }
+.volver { font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; text-decoration: none; white-space: nowrap; color: var(--muted); border: 1px solid var(--line); padding: 5px 9px; background: rgba(18,13,10,.5); transition: color .2s, border-color .2s }
+.volver:hover { color: var(--ink); border-color: var(--ember) }
+.cierre footer a { color: inherit; text-underline-offset: 3px }
+@media (max-width: 899px), (max-aspect-ratio: 1/1) {
+  .volver .largo { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap }
+}
+@media (max-width: 400px) {
+  .top-in { gap: 8px }
+  .marca { font-size: 23px }
+  .top-izq, .top-der { gap: 6px }
+  .volver, .mesa { font-size: 10px; letter-spacing: .04em; padding-inline: 7px }
+}
+.cats { display: flex; gap: 6px; overflow-x: auto; padding: 8px var(--gutter) 12px; scrollbar-width: none }
+.cats::-webkit-scrollbar { display: none }
+.cats button { flex: none; background: none; border: 1px solid transparent; color: var(--muted); font-weight: 500; font-size: 15px; padding: 7px 13px; transition: color .25s, border-color .25s, background .25s }
+.cats button.on { color: var(--ink); border-color: var(--ember); background: rgba(236,106,50,.14) }
+
+/* Índice lateral (pantallas anchas) */
+.indice { display: none }
+
+/* Pantallas */
+.slide { position: relative; z-index: 10; height: 100vh; height: 100svh; scroll-snap-align: start; scroll-snap-stop: always; padding: var(--top) var(--gutter) var(--bar); display: grid; overflow: hidden }
+
+/* Portada */
+.portada { align-content: end; padding-bottom: calc(var(--bar) + 6svh) }
+.portada .in { display: grid; gap: 16px; max-width: 680px }
+.portada h1 { margin: 0; font-family: var(--serif); font-weight: 400; font-size: clamp(96px, 30vw, 240px); line-height: .82; letter-spacing: -.03em }
+.portada p { margin: 0; font-size: 18px; max-width: 36ch; opacity: .9 }
+.horario { font-family: var(--mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); display: flex; gap: 10px; align-items: center }
+.horario i { width: 8px; height: 8px; border-radius: 50%; background: var(--ember); box-shadow: 0 0 0 4px rgba(236,106,50,.2); animation: latido 2s ease-in-out infinite }
+@keyframes latido { 50% { box-shadow: 0 0 0 8px rgba(236,106,50,0) } }
+.baja { margin-top: 10px; font-family: var(--mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); display: flex; gap: 12px; align-items: center }
+.baja i { width: 1px; height: 36px; background: linear-gradient(var(--ink), transparent); animation: gota 2.2s ease-in-out infinite; transform-origin: top }
+@keyframes gota { 0%, 100% { transform: scaleY(.4) } 50% { transform: scaleY(1) } }
+
+/* Portada de sección */
+.tapa { align-content: end; padding-bottom: calc(var(--bar) + 4svh) }
+.tapa .in { display: grid; gap: 14px; max-width: 760px }
+.tapa .n { font-family: var(--mono); font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: var(--ember) }
+.tapa h2 { margin: 0; font-family: var(--serif); font-weight: 400; font-size: clamp(64px, 18vw, 184px); line-height: .86; letter-spacing: -.025em; text-shadow: 0 4px 40px rgba(0,0,0,.5) }
+.tapa p { margin: 0; font-size: 17px; max-width: 40ch; opacity: .9 }
+.tapa ol { list-style: none; margin: 8px 0 0; padding: 0; display: grid; border-top: 1px solid var(--line); max-width: 520px }
+.tapa li button { width: 100%; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: baseline; text-align: left; background: none; border: 0; border-bottom: 1px solid var(--line); padding: 11px 0; font-size: 17px }
+.tapa li button:hover span:first-child { color: var(--ember) }
+.tapa li span:last-child { font-family: var(--mono); font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums }
+
+/* Plato: en celular la foto va de borde a borde, de la cabecera a la barra, y el texto sobre ella */
+.plato { align-content: end; padding-bottom: calc(var(--bar) + 18px) }
+.foto { position: absolute; left: 0; right: 0; top: calc(var(--top) - 48px); bottom: var(--bar); margin: 0; will-change: transform; -webkit-mask-image: linear-gradient(transparent, #000 9%); mask-image: linear-gradient(transparent, #000 9%) }
+.foto img { width: 100%; height: 100%; max-width: none; object-fit: cover; display: block }
+.foto::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(18,13,10,.96) 0%, rgba(18,13,10,.7) 30%, transparent 58%) }
+.foto .rec { position: absolute; z-index: 1; top: 64px; left: var(--gutter); font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; background: var(--ember); color: var(--paper-ink); padding: 4px 8px; font-weight: 500 }
+.texto { position: relative; z-index: 1; display: grid; gap: 8px; min-width: 0; will-change: opacity, transform }
+.donde { font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--ember) }
+.texto h3 { margin: 0; font-family: var(--serif); font-weight: 400; font-size: clamp(30px, 8.4vw, 64px); line-height: 1.02; text-wrap: balance }
+.texto p { margin: 0; color: var(--muted); font-size: 15px; max-width: 44ch }
+.pie { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 4px }
+.precio { font-family: var(--mono); font-size: 20px; font-weight: 500; font-variant-numeric: tabular-nums }
+.tags { display: flex; flex-wrap: wrap; gap: 6px }
+.tag { font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); border: 1px solid var(--line); padding: 3px 7px }
+.sumar { display: inline-flex; align-items: center; gap: 8px; background: rgba(18,13,10,.5); border: 1px solid var(--line); padding: 9px 14px; font-size: 15px; font-weight: 600 }
+.sumar:hover { border-color: var(--ember) }
+.sumar span { font-family: var(--mono); color: var(--ember); font-size: 17px; line-height: 1 }
+.sumar[data-n]:not([data-n="0"]) { border-color: var(--ember); background: rgba(236,106,50,.16) }
+
+/* Cierre */
+.cierre { align-content: center; justify-items: start; gap: 18px }
+.cierre h2 { margin: 0; font-family: var(--serif); font-weight: 400; font-size: clamp(48px, 12vw, 120px); line-height: .9 }
+.cierre p { margin: 0; color: var(--muted); max-width: 40ch }
+.cierre footer { margin-top: 28px; display: grid; gap: 6px; font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted) }
+.cierre footer b { color: var(--ink); font-weight: 500 }
+
+/* Barra del pedido y comanda */
+.barra { position: fixed; z-index: 40; left: 0; right: 0; bottom: 0; padding: 12px var(--gutter) calc(12px + env(safe-area-inset-bottom, 0px)); background: rgba(30,22,18,.94); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border-top: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; gap: 12px }
+.barra-txt { font-family: var(--mono); font-size: 13px; letter-spacing: .04em; color: var(--muted); min-width: 0 }
+.barra-txt b { color: var(--ink); font-weight: 500 }
+.ver { flex: none; white-space: nowrap; background: var(--ember); color: var(--paper-ink); border: 0; padding: 11px 16px; font-weight: 600; font-size: 15px }
+.ver:disabled { background: var(--line); color: var(--muted); cursor: default }
+.comanda { position: fixed; z-index: 50; left: 50%; bottom: calc(var(--bar) + 16px); transform: translateX(-50%); width: min(380px, calc(100% - 32px)); background: var(--paper); color: var(--paper-ink); font-family: var(--mono); font-size: 14px; padding: 22px 22px 26px; box-shadow: 0 24px 60px rgba(0,0,0,.6); --dent: radial-gradient(circle at 8px 0, transparent 7px, var(--paper) 7.5px) }
+.comanda::after { content: ""; position: absolute; left: 0; right: 0; bottom: -8px; height: 8px; background: var(--dent); background-size: 16px 8px }
+.comanda h3 { margin: 0; font-family: var(--serif); font-weight: 400; font-size: 26px }
+.comanda .meta { display: flex; justify-content: space-between; margin: 6px 0 14px; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; opacity: .7 }
+.comanda ul { list-style: none; margin: 0; padding: 12px 0; border-block: 1px dashed rgba(30,23,19,.35); display: grid; gap: 8px; max-height: 40vh; overflow-y: auto }
+.comanda li { display: grid; grid-template-columns: 2.4em minmax(0, 1fr) auto; gap: 8px; font-variant-numeric: tabular-nums }
+.comanda .total { display: flex; justify-content: space-between; margin-top: 12px; font-weight: 500; font-size: 16px }
+.comanda small { display: block; margin-top: 14px; font-size: 12px; opacity: .7 }
+.cerrar { position: absolute; top: 12px; right: 12px; background: none; border: 0; font-family: var(--mono); font-size: 13px; color: var(--paper-ink); padding: 6px }
+
+/* Pantallas anchas: foto grande a la izquierda, texto a la derecha e índice de secciones al costado */
+@media (min-width: 900px) and (min-aspect-ratio: 1/1) {
+  :root { --top: calc(env(safe-area-inset-top, 0px) + 72px) }
+  .top { background: linear-gradient(rgba(18,13,10,.85), transparent) }
+  .top-in { padding-block: 18px }
+  .cats { display: none }
+  /* Los GIF son chicos y verticales: a la altura del monitor, sin recorte, repetidos a lo ancho */
+  .fondo video { display: none }
+  .fondo .pared { display: block }
+  .indice { display: grid; position: fixed; z-index: 30; right: var(--gutter); top: 50%; transform: translateY(-50%); gap: 4px; justify-items: end }
+  .indice button { background: none; border: 0; padding: 6px 0; display: flex; gap: 12px; align-items: center; font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); transition: color .25s }
+  .indice button::after { content: ""; width: 18px; height: 1px; background: currentColor; transition: width .3s }
+  .indice button.on { color: var(--ink) }
+  .indice button.on::after { width: 44px; background: var(--ember) }
+  .plato { grid-template-columns: auto minmax(0, 460px); justify-content: center; align-content: stretch; align-items: center; gap: clamp(32px, 5vw, 80px); padding-right: calc(var(--gutter) + 150px); padding-bottom: calc(var(--bar) + 24px) }
+  .foto { position: relative; inset: auto; height: min(100%, 76vh); aspect-ratio: 3 / 4; -webkit-mask-image: none; mask-image: none }
+  .foto img { box-shadow: 0 30px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(244,235,223,.08) }
+  .foto::after { display: none }
+  .foto .rec { top: 14px; left: 14px }
+  .texto h3 { font-size: clamp(40px, 4.4vw, 68px) }
+  .texto p { font-size: 17px }
+  .tapa, .portada { padding-left: calc(var(--gutter) + 2vw) }
+}
+@media (prefers-reduced-motion: reduce) {
+  .foto, .texto { transform: none !important; opacity: 1 !important }
+  .horario i, .baja i { animation: none }
+  .fondo { transition: none }
+}
+</style>
+
+<div class="fondos" id="fondos" aria-hidden="true"></div>
+
+<header class="top">
+  <div class="top-in">
+    <div class="top-izq">
+      <a class="marca" href="#portada">Tizón</a>
+      <span class="demo">Demo</span>
+    </div>
+    <div class="top-der">
+      <a class="volver" href="/"><span aria-hidden="true">← </span><span class="largo">Volver a </span>Enigma Builders</a>
+      <span class="mesa">Mesa <b>7</b></span>
+    </div>
+  </div>
+  <nav class="cats" id="cats" aria-label="Secciones de la carta"></nav>
+</header>
+<nav class="indice" id="indice" aria-label="Secciones de la carta"></nav>
+
+<main id="carta">
+  <section class="slide portada" id="portada" data-fondo="portada">
+    <div class="in">
+      <span class="horario"><i></i>Cocina abierta hasta las 00:30</span>
+      <h1>Tizón</h1>
+      <p>Parrilla a leña de barrio. Carne uruguaya, fuego lento y vino de la casa.</p>
+      <span class="baja"><i></i>Deslizá para ver la carta</span>
+    </div>
+  </section>
+</main>
+
+<div class="barra">
+  <div class="barra-txt" id="barraTxt">Tocá <b>+</b> en un plato para armar tu pedido</div>
+  <button class="ver" id="ver" disabled>Ver comanda</button>
+</div>
+
+<div class="comanda" id="comanda" hidden role="dialog" aria-label="Tu comanda">
+  <button class="cerrar" id="cerrar" aria-label="Cerrar comanda">✕</button>
+  <h3>Tu pedido</h3>
+  <div class="meta"><span>Mesa 7</span><span id="hora"></span></div>
+  <ul id="items"></ul>
+  <div class="total"><span>Total</span><span id="total"></span></div>
+  <small>Mostrale esta pantalla al mozo y la pasamos a cocina.</small>
+</div>
+
+<script>
+// `fondo`: video (los .webm/.mp4 salen de los GIF) o foto; `blur` para que la foto no compita con el plato.
+const CARTA = [
+  { id: 'entradas', cat: 'Entradas', bajada: 'Para picar mientras se hace la carne.', fondo: { img: 'brasas' }, platos: [
+    { n: 'Provoleta', d: 'Provolone a la parrilla con orégano y ají molido, en su sartén de hierro.', p: 420, foto: 'provoleta', t: ['Vegetariano'] },
+    { n: 'Chorizo y morcilla', d: 'Chorizo de cerdo y morcilla dulce a la leña, con limón asado.', p: 380, foto: 'chorizo' },
+    { n: 'Empanadas de carne', d: 'Dos unidades, carne cortada a cuchillo, al horno de barro.', p: 300, foto: 'empanadas' },
+    { n: 'Burrata con tomates', d: 'Tomates de estación, albahaca y aceite de oliva de Maldonado.', p: 560, foto: 'burrata', t: ['Vegetariano', 'Sin TACC'] },
+  ]},
+  { id: 'parrilla', cat: 'Parrilla', bajada: 'Todo a leña de coronilla. Elegí el punto y te lo respetamos.', fondo: { video: 'parrilla' }, platos: [
+    { n: 'Ojo de bife', d: '400 g con hueso, chimichurri de la casa y sal en escamas.', p: 1190, foto: 'bife', rec: true },
+    { n: 'Asado de tira', d: '500 g de tira ancha, cocción lenta de dos horas.', p: 890, foto: 'asado' },
+    { n: 'Entraña', d: 'Entraña fina, bien sellada, con salsa criolla.', p: 1050, foto: 'entrana' },
+    { n: 'Vacío', d: 'Jugoso por dentro y crocante por fuera, con chimichurri.', p: 920, foto: 'vacio' },
+  ]},
+  { id: 'pastas', cat: 'Pastas', bajada: 'Amasadas a mano todas las mañanas.', fondo: { video: 'pastas' }, platos: [
+    { n: 'Sorrentinos de calabaza', d: 'Con queso y nuez, en manteca de salvia.', p: 640, foto: 'sorrentinos', t: ['Vegetariano'] },
+    { n: 'Ñoquis de papa', d: 'Con tuco de carne de cocción lenta y parmesano.', p: 520, foto: 'noquis' },
+    { n: 'Tallarines con hongos', d: 'Tallarines caseros en crema de hongos y pimienta negra.', p: 590, foto: 'tallarines', t: ['Vegetariano'] },
+  ]},
+  { id: 'cocteles', cat: 'Cócteles', bajada: 'Clásicos bien hechos, para antes o después del fuego.', fondo: { video: 'cocteles' }, platos: [
+    { n: 'Negroni', d: 'Gin, vermut rosso y Campari, con piel de naranja.', p: 390, foto: 'negroni', rec: true },
+    { n: 'Aperol Spritz', d: 'Aperol, espumante y un golpe de soda.', p: 360, foto: 'spritz' },
+    { n: 'Caipirinha', d: 'Cachaça, lima y azúcar mascabo.', p: 340, foto: 'caipirinha' },
+    { n: 'Gin tonic', d: 'Gin, tónica, pepino y enebro.', p: 380, foto: 'gintonic' },
+  ]},
+  { id: 'postres', cat: 'Postres', bajada: 'Hechos en casa, como los de antes.', fondo: { img: 'panqueque', blur: true }, platos: [
+    { n: 'Flan casero', d: 'Con dulce de leche y crema batida.', p: 290, foto: 'flan', t: ['Sin TACC'] },
+    { n: 'Panqueque de dulce de leche', d: 'Caramelizado al momento.', p: 260, foto: 'panqueque' },
+  ]},
+];
+
+const $ = id => document.getElementById(id);
+const plata = n => '$ ' + n.toLocaleString('es-UY');
+const quieto = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const PLATOS = [];
+
+// Fondos
+const capa = (id, f) => {
+  const d = document.createElement('div');
+  d.className = 'fondo' + (f.blur ? ' blur' : '');
+  d.dataset.fondo = id;
+  d.innerHTML = f.video
+    ? `<video muted loop playsinline preload="auto" poster="img/${f.video}-poster.jpg"><source src="img/${f.video}.webm" type="video/webm"><source src="img/${f.video}.mp4" type="video/mp4"></video><div class="pared" style="background-image:url(img/${f.video}.gif)"></div>`
+    : `<img src="img/${f.img}.jpg" alt="">`;
+  $('fondos').append(d);
+};
+capa('portada', { img: 'brasas' });
+CARTA.forEach(s => capa(s.id, s.fondo));
+
+// Pantallas: portada de sección + un plato por pantalla
+const main = $('carta');
+CARTA.forEach((s, si) => {
+  const tapa = document.createElement('section');
+  tapa.className = 'slide tapa'; tapa.id = s.id; tapa.dataset.fondo = s.id;
+  tapa.innerHTML = `<div class="in">
+    <span class="n">${String(si + 1).padStart(2, '0')} / ${String(CARTA.length).padStart(2, '0')} · ${s.platos.length} opciones</span>
+    <h2>${s.cat}</h2><p>${s.bajada}</p>
+    <ol>${s.platos.map((p, i) => `<li><button data-ir="${s.id}-${i}"><span>${p.n}</span><span>${plata(p.p)}</span></button></li>`).join('')}</ol>
+  </div>`;
+  main.append(tapa);
+  s.platos.forEach((p, i) => {
+    const k = PLATOS.push(p) - 1;
+    const el = document.createElement('section');
+    el.className = 'slide plato'; el.id = `${s.id}-${i}`; el.dataset.fondo = s.id; el.dataset.k = k;
+    el.innerHTML = `
+      <figure class="foto"><img src="img/${p.foto}.jpg" alt="${p.n}" loading="${k < 3 ? 'eager' : 'lazy'}">${p.rec ? '<span class="rec">Recomendado</span>' : ''}</figure>
+      <div class="texto">
+        <span class="donde">${s.cat} · ${i + 1} de ${s.platos.length}</span>
+        <h3>${p.n}</h3>
+        <p>${p.d}</p>
+        ${p.t ? `<div class="tags">${p.t.map(t => `<span class="tag">${t}</span>`).join('')}</div>` : ''}
+        <div class="pie"><span class="precio">${plata(p.p)}</span>
+          <button class="sumar" data-k="${k}" data-n="0" aria-label="Sumar ${p.n} al pedido"><span>+</span>Sumar</button></div>
+      </div>`;
+    main.append(el);
+  });
+});
+const cierre = document.createElement('section');
+cierre.className = 'slide cierre'; cierre.id = 'fin'; cierre.dataset.fondo = 'portada';
+cierre.innerHTML = `<h2>¿Ya elegiste?</h2><p>Abrí la comanda y mostrásela al mozo. Si querés cambiar algo, volvé a cualquier plato.</p>
+  <button class="ver" id="ver2" disabled>Ver comanda</button>
+  <footer><span>Carta de demostración · restaurante ficticio</span><span>Precios en pesos uruguayos, IVA incluido</span><span>Diseño y desarrollo <a href="/"><b>Enigma Builders</b></a></span></footer>`;
+main.append(cierre);
+
+// Navegación por sección
+const nav = CARTA.map(s => `<button data-ir="${s.id}">${s.cat}</button>`).join('');
+$('cats').innerHTML = nav; $('indice').innerHTML = nav;
+const ir = id => { const el = $(id); if (el) scrollTo({ top: el.offsetTop, behavior: quieto ? 'auto' : 'smooth' }); };
+document.addEventListener('click', e => { const b = e.target.closest('[data-ir]'); if (b) ir(b.dataset.ir); });
+
+const slides = [...document.querySelectorAll('.slide')];
+const fondos = [...document.querySelectorAll('.fondo')];
+const navBtns = [...document.querySelectorAll('.cats button, .indice button')];
+let fondoActual = null;
+
+function frame() {
+  const vh = innerHeight;
+  let cerca = slides[0], dist = Infinity;
+  for (const s of slides) {
+    const off = (s.offsetTop - scrollY) / vh; // 0 = en pantalla
+    if (Math.abs(off) < dist) { dist = Math.abs(off); cerca = s; }
+    if (quieto || Math.abs(off) > 1.2 || !s.classList.contains('plato')) continue;
+    const a = Math.min(1, Math.abs(off));
+    s.querySelector('.foto').style.transform = `translateY(${(off * 14).toFixed(2)}%) scale(${(1 - a * .1).toFixed(3)})`;
+    const tx = s.querySelector('.texto');
+    tx.style.opacity = (1 - a * 1.4).toFixed(3);
+    tx.style.transform = `translateY(${(off * 40).toFixed(1)}px)`;
+  }
+  const f = cerca.dataset.fondo;
+  document.body.classList.toggle('en-plato', cerca.classList.contains('plato'));
+  if (f !== fondoActual) {
+    fondoActual = f;
+    fondos.forEach(el => {
+      const on = el.dataset.fondo === f;
+      el.classList.toggle('on', on);
+      const v = el.querySelector('video');
+      if (v) on && !quieto && v.offsetParent ? v.play().catch(() => {}) : v.pause();
+    });
+    navBtns.forEach(b => b.classList.toggle('on', b.dataset.ir === f));
+    const chip = $('cats').querySelector('.on');
+    if (chip) $('cats').scrollTo({ left: chip.offsetLeft - 16, behavior: 'smooth' });
+  }
+}
+
+// Pedido
+const pedido = {};
+function pintar() {
+  const lineas = Object.entries(pedido).filter(([, n]) => n > 0);
+  const cant = lineas.reduce((s, [, n]) => s + n, 0);
+  const total = lineas.reduce((s, [k, n]) => s + PLATOS[k].p * n, 0);
+  $('barraTxt').innerHTML = cant ? `<b>${cant}</b> ${cant === 1 ? 'ítem' : 'ítems'} · <b>${plata(total)}</b>` : 'Tocá <b>+</b> en un plato para armar tu pedido';
+  $('ver').disabled = $('ver2').disabled = !cant;
+  $('items').innerHTML = lineas.map(([k, n]) => `<li><span>${n}×</span><span>${PLATOS[k].n}</span><span>${plata(PLATOS[k].p * n)}</span></li>`).join('');
+  $('total').textContent = plata(total);
+  document.querySelectorAll('.sumar').forEach(b => {
+    const n = pedido[b.dataset.k] || 0;
+    b.dataset.n = n;
+    b.innerHTML = n ? `<span>${n}</span>Sumar otro` : '<span>+</span>Sumar';
+  });
+  if (!cant) $('comanda').hidden = true;
+}
+main.addEventListener('click', e => {
+  const b = e.target.closest('.sumar');
+  if (!b) return;
+  pedido[b.dataset.k] = (pedido[b.dataset.k] || 0) + 1;
+  pintar();
+});
+const abrir = () => {
+  $('hora').textContent = new Date().toLocaleTimeString('es-UY', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+  $('comanda').hidden = !$('comanda').hidden;
+};
+$('ver').addEventListener('click', abrir);
+$('ver2').addEventListener('click', abrir);
+$('cerrar').addEventListener('click', () => { $('comanda').hidden = true; });
+
+let pend = false;
+addEventListener('scroll', () => { if (!pend) { pend = true; requestAnimationFrame(() => { pend = false; frame(); }); } }, { passive: true });
+addEventListener('resize', frame);
+frame();
+pintar();
+</script>

@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="es">
+<meta charset="utf-8">
+<title>Navaja Barbería · Demo de Enigma Builders</title>
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800;900&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: reserva a pantalla completa, un paso por pantalla (scroll con snap). Detrás queda una foto
+   fija que cambia con lo que elegís (el servicio, el barbero, el local); en celular la foto ocupa
+   la parte de arriba y el paso sube como un panel; en pantallas anchas, foto a la izquierda y paso a la derecha. */
+:root {
+  --bg: #0e1513;        /* verde casi negro de los azulejos de noche */
+  --panel: #13201c;
+  --raised: #1a2b26;
+  --ink: #eeeae1;
+  --muted: #9faca6;
+  --green: #2f7a62;     /* azulejo */
+  --brass: #c9a24e;     /* bronce de los sillones */
+  --line: rgba(238, 234, 225, .14);
+  --taken: rgba(238, 234, 225, .05);
+  --wa: #1f3a2c;
+  --display: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
+  --sans: "Manrope", "Segoe UI", Arial, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+  --gutter: clamp(16px, 5vw, 56px);
+  --bar: calc(env(safe-area-inset-bottom, 0px) + 66px);
+  --foto: 31svh;        /* alto de la foto arriba en celular */
+  color-scheme: dark;
+}
+* { box-sizing: border-box }
+html { scroll-snap-type: y mandatory; background: var(--bg) }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.5; -webkit-font-smoothing: antialiased }
+button, input { font: inherit; color: inherit }
+button { cursor: pointer }
+:focus-visible { outline: 2px solid var(--brass); outline-offset: 3px }
+
+/* Foto fija */
+.escena { position: fixed; z-index: 0; left: 0; right: 0; top: 0; height: calc(var(--foto) + 40px); overflow: hidden; background: var(--bg) }
+.escena img { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; object-fit: cover; object-position: 50% 30%; opacity: 0; transform: scale(1.06); transition: opacity .6s ease, transform 1.4s ease }
+.escena img.on { opacity: 1; transform: scale(1) }
+.escena::after { content: ""; position: absolute; inset: 0; background: linear-gradient(rgba(14,21,19,.55), transparent 35%, transparent 60%, rgba(14,21,19,.9)) }
+.marca-fija { position: fixed; z-index: 2; left: var(--gutter); top: calc(env(safe-area-inset-top, 0px) + 16px); display: flex; gap: 10px; align-items: center }
+.demo { font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--brass); border: 1px solid rgba(201,162,78,.6); background: rgba(14,21,19,.6); padding: 3px 6px; line-height: 1.3 }
+.der-fija { position: fixed; z-index: 2; right: var(--gutter); top: calc(env(safe-area-inset-top, 0px) + 18px); display: grid; justify-items: end; gap: 8px }
+.volver { font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; text-decoration: none; white-space: nowrap; color: var(--ink); opacity: .8; background: rgba(14,21,19,.6); border: 1px solid var(--line); padding: 4px 9px; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); transition: opacity .2s, border-color .2s }
+.volver:hover { opacity: 1; border-color: var(--brass) }
+.credito a { color: inherit; text-underline-offset: 3px }
+@media (max-width: 899px), (max-aspect-ratio: 1/1) {
+  .marca-fija { flex-direction: column; align-items: flex-start; gap: 6px }
+}
+.leyenda-foto { display: flex; gap: 10px; align-items: center; font-family: var(--display); font-weight: 900; font-size: 22px; letter-spacing: .04em; text-transform: uppercase; color: var(--ink); text-decoration: none }
+.leyenda-foto span { color: var(--brass) }
+.abierto { display: inline-flex; gap: 8px; align-items: center; font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; background: rgba(14,21,19,.6); padding: 5px 9px; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px) }
+.abierto i { width: 7px; height: 7px; border-radius: 50%; background: #6fd39b; box-shadow: 0 0 0 3px rgba(111,211,155,.2) }
+
+/* Pantallas */
+.paso { position: relative; z-index: 1; height: 100vh; height: 100svh; scroll-snap-align: start; scroll-snap-stop: always; display: grid; grid-template-rows: var(--foto) minmax(0, 1fr); overflow: hidden }
+.paso .caja { background: var(--panel); border-top: 1px solid var(--line); padding: 18px var(--gutter) calc(var(--bar) + 12px); display: grid; align-content: start; gap: 16px; min-height: 0; overflow-y: auto; scrollbar-width: none }
+.paso .caja::-webkit-scrollbar { display: none }
+.cab { display: grid; gap: 4px }
+.num { font-family: var(--mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--brass) }
+.paso h2 { margin: 0; font-family: var(--display); font-weight: 800; font-size: clamp(38px, 10vw, 64px); line-height: .92; text-transform: uppercase; letter-spacing: .01em; text-wrap: balance }
+.paso.bloq .caja > :not(.cab) { opacity: .35; pointer-events: none }
+.paso.bloq .cab::after { content: "Completá el paso anterior"; font-family: var(--mono); font-size: 12px; color: var(--muted); letter-spacing: .06em }
+
+/* Portada */
+.portada { grid-template-rows: 1fr; align-items: end }
+.portada .fondo { position: absolute; inset: 0; z-index: -1 }
+.portada .fondo img { width: 100%; height: 100%; max-width: none; object-fit: cover; object-position: 50% 40% }
+.portada .fondo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(14,21,19,.96) 8%, rgba(14,21,19,.45) 55%, rgba(14,21,19,.35)) }
+.portada .in { padding: 0 var(--gutter) calc(var(--bar) + 7svh); display: grid; align-content: end; gap: 18px; max-width: 760px }
+.portada h1 { margin: 0; font-family: var(--display); font-weight: 900; font-size: clamp(88px, 27vw, 220px); line-height: .8; text-transform: uppercase; letter-spacing: -.005em }
+.portada h1 span { display: block; color: var(--brass); font-size: .42em; letter-spacing: .14em; line-height: 1.1 }
+.portada p { margin: 0; font-size: 17px; max-width: 38ch; color: var(--ink); opacity: .88 }
+.datos-local { display: flex; flex-wrap: wrap; gap: 8px 18px; font-family: var(--mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted) }
+.empezar { justify-self: start; background: var(--brass); color: var(--bg); border: 0; padding: 16px 22px; font-weight: 700; font-size: 17px; display: inline-flex; gap: 12px; align-items: center }
+.empezar::after { content: "↓"; font-family: var(--mono) }
+
+/* Servicios */
+.servicios { display: grid; gap: 8px }
+.op { text-align: left; background: var(--raised); border: 1.5px solid transparent; padding: 8px 14px 8px 8px; display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; gap: 2px 14px; align-items: center; transition: border-color .2s, background .2s }
+.op:hover { border-color: var(--line) }
+.op[aria-pressed="true"] { border-color: var(--brass); background: color-mix(in srgb, var(--brass) 12%, var(--raised)) }
+.op img { grid-row: span 2; width: 52px; height: 52px; object-fit: cover; display: block }
+.op b { font-weight: 700; font-size: 17px; line-height: 1.2 }
+.op small { grid-column: 2; color: var(--muted); font-size: 13px; line-height: 1.3 }
+.op .p { grid-row: span 2; grid-column: 3; text-align: right; font-family: var(--mono); font-weight: 500; white-space: nowrap; font-variant-numeric: tabular-nums; display: grid; gap: 2px }
+.op .p em { font-style: normal; font-size: 12px; color: var(--muted) }
+
+/* Barberos */
+.barberos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px }
+.barbero { background: var(--raised); border: 1.5px solid transparent; padding: 0 0 10px; display: grid; gap: 2px; text-align: left; transition: border-color .2s }
+.barbero[aria-pressed="true"] { border-color: var(--brass) }
+.barbero img { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; object-position: 50% 20%; display: block; margin-bottom: 8px; filter: saturate(.85) }
+.barbero[aria-pressed="true"] img { filter: none }
+.barbero b { padding: 0 10px; font-family: var(--display); font-weight: 800; font-size: 22px; text-transform: uppercase; line-height: 1 }
+.barbero small { padding: 0 10px; color: var(--muted); font-size: 12px; line-height: 1.3 }
+.barbero .est { padding: 0 10px; font-family: var(--mono); font-size: 11px; color: var(--brass) }
+.cualquiera { background: none; border: 1px dashed var(--line); color: var(--muted); padding: 11px; font-size: 14px; font-weight: 600 }
+.cualquiera[aria-pressed="true"] { border: 1.5px solid var(--brass); color: var(--ink) }
+
+/* Día y hora */
+.dias { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none }
+.dias::-webkit-scrollbar { display: none }
+.dia { flex: none; width: 60px; padding: 9px 0; text-align: center; background: var(--raised); border: 1.5px solid transparent; display: grid; gap: 2px }
+.dia[aria-pressed="true"] { background: var(--brass); color: var(--bg) }
+.dia small { font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; opacity: .75 }
+.dia b { font-family: var(--display); font-size: 28px; font-weight: 800; line-height: 1 }
+.franja { font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: -8px }
+.horas { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px }
+.hora { padding: 11px 0; text-align: center; background: var(--raised); border: 1.5px solid transparent; font-family: var(--mono); font-weight: 500; font-variant-numeric: tabular-nums }
+.hora:hover:not(:disabled) { border-color: var(--line) }
+.hora:disabled { background: var(--taken); color: rgba(238,234,225,.3); text-decoration: line-through; cursor: default }
+.hora[aria-pressed="true"] { background: var(--brass); color: var(--bg) }
+.nota { margin: 0; font-size: 13px; color: var(--muted) }
+
+/* Datos */
+.ticket { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 14px; align-items: center; background: var(--raised); padding: 10px }
+.ticket img { width: 64px; height: 64px; object-fit: cover; display: block }
+.ticket b { display: block; font-size: 16px }
+.ticket span { font-family: var(--mono); font-size: 12px; color: var(--muted) }
+form { display: grid; gap: 12px }
+label { display: grid; gap: 6px; font-weight: 600; font-size: 14px }
+input { background: var(--raised); border: 1.5px solid var(--line); padding: 13px 14px; font-size: 17px; width: 100% }
+input:focus { border-color: var(--brass); outline: none }
+.aviso { font-size: 13px; color: var(--muted); margin: 0 }
+.confirmar { background: var(--brass); color: var(--bg); border: 0; padding: 16px; font-weight: 700; font-size: 17px }
+.confirmar:disabled { opacity: .4; cursor: default }
+
+/* Confirmado */
+.listo .caja { gap: 18px }
+.ficha { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px 18px; margin: 0; font-size: 15px; border-block: 1px solid var(--line); padding-block: 14px }
+.ficha dt { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding-top: 2px }
+.ficha dd { margin: 0; font-weight: 600 }
+.wa-t { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted) }
+.wa { background: var(--wa); padding: 12px 14px 8px; border-radius: 4px 14px 14px 14px; max-width: 36ch; font-size: 15px }
+.wa small { display: block; text-align: right; font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 4px }
+.credito { display: grid; gap: 4px; font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted) }
+.credito b { color: var(--ink); font-weight: 500 }
+
+/* Resumen fijo */
+.resumen { position: fixed; z-index: 30; left: 0; right: 0; bottom: 0; background: rgba(14,21,19,.96); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border-top: 1px solid var(--line); padding: 11px var(--gutter) calc(11px + env(safe-area-inset-bottom, 0px)) }
+.resumen-in { display: flex; justify-content: space-between; align-items: center; gap: 12px }
+.resumen-txt { min-width: 0; font-size: 14px; line-height: 1.35 }
+.resumen-txt b { display: block; font-size: 15px }
+.resumen-txt span { color: var(--muted); font-family: var(--mono); font-size: 12px }
+.total { font-family: var(--mono); font-weight: 500; font-size: 18px; white-space: nowrap; color: var(--brass) }
+
+/* Pantallas anchas: foto a la izquierda a toda altura, paso a la derecha */
+@media (min-width: 900px) and (min-aspect-ratio: 1/1) {
+  :root { --foto: 0px }
+  .escena { right: 50%; height: 100%; border-right: 1px solid var(--line) }
+  .escena::after { background: linear-gradient(rgba(14,21,19,.5), transparent 30%, transparent 70%, rgba(14,21,19,.6)) }
+  .paso { grid-template-rows: 1fr; grid-template-columns: 1fr 1fr }
+  .paso .caja { grid-column: 2; border-top: 0; align-content: center; padding: 88px clamp(32px, 5vw, 80px) calc(var(--bar) + 28px); max-width: 720px }
+  .portada { grid-template-columns: 1fr }
+  .portada .in { padding-left: calc(var(--gutter) + 2vw) }
+  .resumen { left: 50% }
+}
+@media (prefers-reduced-motion: reduce) {
+  .escena img { transition: opacity .2s; transform: none }
+}
+</style>
+
+<div class="escena" id="escena" aria-hidden="true">
+  <img src="img/barberia.jpg" alt="" data-f="barberia" class="on">
+  <img src="img/corte.jpg" alt="" data-f="corte">
+  <img src="img/toalla.jpg" alt="" data-f="toalla">
+  <img src="img/barba.jpg" alt="" data-f="barba">
+  <img src="img/nino.jpg" alt="" data-f="nino">
+  <img src="img/mateo.jpg" alt="" data-f="mateo">
+  <img src="img/bruno.jpg" alt="" data-f="bruno">
+  <img src="img/joaquin.jpg" alt="" data-f="joaquin">
+</div>
+<div class="marca-fija">
+  <a class="leyenda-foto" href="#portada">Navaja <span>✂</span></a>
+  <span class="demo">Demo</span>
+</div>
+<div class="der-fija">
+  <span class="abierto"><i></i>Abierto hasta las 20:00</span>
+  <a class="volver" href="/"><span aria-hidden="true">← </span>Volver a Enigma Builders</a>
+</div>
+
+<main>
+  <section class="paso portada" id="portada">
+    <div class="fondo"><img src="img/barberia.jpg" alt="Interior de la barbería con un sillón de cuero, madera y espejos"></div>
+    <div class="in">
+      <h1>Navaja<span>Barbería</span></h1>
+      <p>Corte, barba y toalla caliente en Bulevar Artigas. Elegí servicio, barbero y horario, y te esperamos.</p>
+      <div class="datos-local"><span>Bulevar Artigas 1450</span><span>Lun a sáb · 10 a 20 h</span></div>
+      <button class="empezar" id="empezar">Reservá tu turno</button>
+    </div>
+  </section>
+
+  <section class="paso" id="p1" data-paso="1">
+    <div></div>
+    <div class="caja">
+      <div class="cab"><span class="num">Paso 1 de 4</span><h2>¿Qué te hacés?</h2></div>
+      <div class="servicios" id="servicios"></div>
+    </div>
+  </section>
+
+  <section class="paso bloq" id="p2" data-paso="2">
+    <div></div>
+    <div class="caja">
+      <div class="cab"><span class="num">Paso 2 de 4</span><h2>¿Con quién?</h2></div>
+      <div class="barberos" id="barberos"></div>
+      <button class="cualquiera" id="cualquiera" type="button" aria-pressed="false">Me da igual, el primero que esté libre</button>
+    </div>
+  </section>
+
+  <section class="paso bloq" id="p3" data-paso="3">
+    <div></div>
+    <div class="caja">
+      <div class="cab"><span class="num">Paso 3 de 4</span><h2>Día y hora</h2></div>
+      <div class="dias" id="dias"></div>
+      <span class="franja" id="franja"></span>
+      <div class="horas" id="horas"></div>
+      <p class="nota">Los horarios tachados ya están tomados.</p>
+    </div>
+  </section>
+
+  <section class="paso bloq" id="p4" data-paso="4">
+    <div></div>
+    <div class="caja">
+      <div class="cab"><span class="num">Paso 4 de 4</span><h2>Tus datos</h2></div>
+      <div class="ticket" id="ticket"></div>
+      <form id="form" novalidate>
+        <label for="nombre">Nombre<input id="nombre" autocomplete="off" placeholder="Cómo te llamás"></label>
+        <label for="cel">WhatsApp<input id="cel" inputmode="tel" autocomplete="off" placeholder="099 123 456"></label>
+        <p class="aviso">Te mandamos el recordatorio por WhatsApp el día anterior. En esta demo no se envía nada.</p>
+        <button class="confirmar" id="confirmar" type="submit" disabled>Confirmar turno</button>
+      </form>
+    </div>
+  </section>
+
+  <section class="paso listo" id="listo" hidden aria-live="polite">
+    <div></div>
+    <div class="caja">
+      <div class="cab"><span class="num">Turno confirmado</span><h2 id="listoTit">Listo</h2></div>
+      <dl class="ficha" id="ficha"></dl>
+      <span class="wa-t">El recordatorio que te llega el día antes</span>
+      <div class="wa" id="wa"></div>
+      <div class="credito"><span>Agenda de demostración · barbería ficticia</span><span>Diseño y desarrollo <a href="/"><b>Enigma Builders</b></a></span></div>
+    </div>
+  </section>
+</main>
+
+<div class="resumen" aria-live="polite">
+  <div class="resumen-in">
+    <div class="resumen-txt" id="resumenTxt"><b>Tu turno</b><span>Elegí un servicio para empezar</span></div>
+    <div class="total" id="total"></div>
+  </div>
+</div>
+
+<script>
+const SERVICIOS = [
+  { n: 'Corte', d: 'Máquina y tijera, lavado y peinado', min: 40, p: 600, f: 'corte' },
+  { n: 'Corte + barba', d: 'Con toalla caliente y perfilado', min: 60, p: 850, f: 'toalla' },
+  { n: 'Barba', d: 'Perfilado a navaja con espuma caliente', min: 30, p: 400, f: 'barba' },
+  { n: 'Corte niño', d: 'Hasta 12 años', min: 30, p: 450, f: 'nino' },
+];
+const BARBEROS = [
+  { n: 'Mateo', d: 'Fades y diseños', est: '★ 4,9 · 312 reseñas', f: 'mateo' },
+  { n: 'Bruno', d: 'Barba y navaja clásica', est: '★ 5,0 · 28 años de oficio', f: 'bruno' },
+  { n: 'Joaquín', d: 'Cortes texturizados', est: '★ 4,8 · 164 reseñas', f: 'joaquin' },
+];
+const HORAS = ['10:00', '10:45', '11:30', '12:15', '14:00', '14:45', '15:30', '16:15', '17:00', '17:45', '18:30', '19:15'];
+const DIAS_C = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'];
+const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'setiembre', 'octubre', 'noviembre', 'diciembre'];
+
+const $ = id => document.getElementById(id);
+const plata = n => '$ ' + n.toLocaleString('es-UY');
+const quieto = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const t = { s: null, b: null, d: null, h: null }; // b: índice de barbero o 'x' (cualquiera)
+
+// Próximos 8 días con la barbería abierta (cierra los domingos).
+const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+const dias = [];
+for (let i = 0; dias.length < 8; i++) { const d = new Date(hoy); d.setDate(hoy.getDate() + i); if (d.getDay() !== 0) dias.push(d); }
+const enDias = d => Math.round((d - hoy) / 864e5);
+// Ocupados fijos por día y barbero, así la grilla no cambia al recargar.
+const bi = () => (t.b === 'x' ? 3 : t.b ?? 0);
+const ocupado = (di, hi) => ((di * 7 + hi * 3 + bi() * 5) % 5 === 0) || (enDias(dias[di]) === 0 && hi < 3);
+
+// Foto fija
+const fotos = [...document.querySelectorAll('#escena img')];
+const verFoto = f => fotos.forEach(img => img.classList.toggle('on', img.dataset.f === f));
+const fotoDePaso = n => {
+  if (n === 1) return SERVICIOS[t.s ?? 1].f;
+  if (n === 2) return t.b !== null && t.b !== 'x' ? BARBEROS[t.b].f : 'mateo';
+  if (n === 4) return t.s !== null ? SERVICIOS[t.s].f : 'barberia';
+  if (n === 5) return t.b !== null && t.b !== 'x' ? BARBEROS[t.b].f : 'mateo';
+  return 'barberia';
+};
+
+const ir = id => { const s = $(id); s.classList.remove('bloq'); setTimeout(() => scrollTo({ top: s.offsetTop, behavior: quieto ? 'auto' : 'smooth' }), 260); };
+const marcar = (cont, el) => [...cont.querySelectorAll('button')].forEach(c => c.setAttribute('aria-pressed', String(c === el)));
+const boton = (cls, html, on) => { const b = document.createElement('button'); b.type = 'button'; b.className = cls; b.innerHTML = html; b.setAttribute('aria-pressed', 'false'); b.onclick = on; return b; };
+
+$('empezar').onclick = () => scrollTo({ top: $('p1').offsetTop, behavior: quieto ? 'auto' : 'smooth' });
+
+SERVICIOS.forEach((s, i) => {
+  const b = boton('op', `<img src="img/${s.f}.jpg" alt=""><b>${s.n}</b><small>${s.d}</small><span class="p">${plata(s.p)}<em>${s.min} min</em></span>`, e => {
+    t.s = i; marcar($('servicios'), e.currentTarget); verFoto(s.f); pintar(); ir('p2');
+  });
+  b.onmouseenter = () => verFoto(s.f);
+  b.onmouseleave = () => verFoto(fotoDePaso(1));
+  $('servicios').append(b);
+});
+BARBEROS.forEach((b, i) => {
+  const el = boton('barbero', `<img src="img/${b.f}.jpg" alt="${b.n}"><b>${b.n}</b><small>${b.d}</small><span class="est">${b.est}</span>`, e => {
+    t.b = i; marcar($('barberos'), e.currentTarget); $('cualquiera').setAttribute('aria-pressed', 'false'); verFoto(b.f); t.h = null; horas(); pintar(); ir('p3');
+  });
+  el.onmouseenter = () => verFoto(b.f);
+  el.onmouseleave = () => verFoto(fotoDePaso(2));
+  $('barberos').append(el);
+});
+$('cualquiera').onclick = () => {
+  t.b = 'x'; marcar($('barberos'), null); $('cualquiera').setAttribute('aria-pressed', 'true'); t.h = null; horas(); pintar(); ir('p3');
+};
+dias.forEach((d, i) => $('dias').append(boton('dia', `<small>${enDias(d) === 0 ? 'hoy' : DIAS_C[d.getDay()]}</small><b>${d.getDate()}</b>`, e => {
+  t.d = i; marcar($('dias'), e.currentTarget); t.h = null; horas(); pintar();
+})));
+
+const fecha = i => { const d = dias[i]; return `${enDias(d) === 0 ? 'hoy' : enDias(d) === 1 ? 'mañana' : DIAS_C[d.getDay()]} ${d.getDate()} de ${MESES[d.getMonth()]}`; };
+function horas() {
+  const cont = $('horas'); cont.innerHTML = '';
+  if (t.d === null) { t.d = 0; $('dias').children[0].setAttribute('aria-pressed', 'true'); }
+  const libres = HORAS.filter((_, i) => !ocupado(t.d, i)).length;
+  $('franja').textContent = `${fecha(t.d)} · ${libres} horarios libres`;
+  HORAS.forEach((h, i) => {
+    const b = boton('hora', h, e => { t.h = i; marcar(cont, e.currentTarget); pintar(); ir('p4'); });
+    b.disabled = ocupado(t.d, i);
+    cont.append(b);
+  });
+}
+
+const barberoTxt = () => (t.b === 'x' ? 'el primero libre' : BARBEROS[t.b].n);
+function pintar() {
+  const s = SERVICIOS[t.s];
+  const partes = [s?.n, t.b !== null ? 'con ' + barberoTxt() : null, t.d !== null && t.h !== null ? `${fecha(t.d)}, ${HORAS[t.h]}` : null].filter(Boolean);
+  $('resumenTxt').innerHTML = `<b>Tu turno</b><span>${partes.length ? partes.join(' · ') : 'Elegí un servicio para empezar'}</span>`;
+  $('total').textContent = s ? plata(s.p) : '';
+  if (s && t.h !== null) $('ticket').innerHTML = `<img src="img/${s.f}.jpg" alt=""><div><b>${s.n} · ${s.min} min</b><span>Con ${barberoTxt()} · ${fecha(t.d)}, ${HORAS[t.h]}</span></div>`;
+  $('confirmar').disabled = !(t.h !== null && $('nombre').value.trim() && $('cel').value.trim().length >= 6);
+}
+['nombre', 'cel'].forEach(id => $(id).addEventListener('input', pintar));
+
+$('form').addEventListener('submit', e => {
+  e.preventDefault();
+  if ($('confirmar').disabled) return;
+  const s = SERVICIOS[t.s], nombre = $('nombre').value.trim().split(' ')[0];
+  const barbero = t.b === 'x' ? 'Mateo' : BARBEROS[t.b].n;
+  $('listoTit').textContent = `Te esperamos, ${nombre}`;
+  $('ficha').innerHTML = `<dt>Servicio</dt><dd>${s.n} · ${s.min} min</dd><dt>Con</dt><dd>${barbero}</dd><dt>Cuándo</dt><dd>${fecha(t.d)}, ${HORAS[t.h]}</dd><dt>Dónde</dt><dd>Bulevar Artigas 1450</dd><dt>Total</dt><dd>${plata(s.p)}, se paga en el local</dd>`;
+  $('wa').innerHTML = `Hola ${nombre} 👋 Te esperamos ${fecha(t.d)} a las ${HORAS[t.h]} con ${barbero} en Navaja. Respondé <b>1</b> para confirmar o <b>2</b> para cancelar.<small>Navaja Barbería · 09:00</small>`;
+  $('listo').hidden = false;
+  ir('listo');
+});
+
+// La foto sigue al paso que está en pantalla.
+const pasos = [...document.querySelectorAll('.paso[data-paso]'), $('listo')];
+let actual = 0;
+function frame() {
+  let n = 0;
+  pasos.forEach((p, i) => { if (!p.hidden && Math.abs(p.offsetTop - scrollY) < innerHeight * .5) n = i + 1; });
+  if (n !== actual) { actual = n; verFoto(n ? fotoDePaso(n) : 'barberia'); }
+}
+let pend = false;
+addEventListener('scroll', () => { if (!pend) { pend = true; requestAnimationFrame(() => { pend = false; frame(); }); } }, { passive: true });
+horas();
+pintar();
+</script>

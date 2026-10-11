@@ -1,0 +1,63 @@
+---
+import { Image } from 'astro:assets';
+import { demos } from '../data/demos';
+---
+
+<section id="demos" class="surface-light relative z-20 border-t border-brand" aria-labelledby="demos-title">
+  <div class="w-full px-3 pt-24 pb-16 sm:px-5 lg:px-6 lg:pt-28 lg:pb-24">
+    <p class="tag">[ 04 ] Demos</p>
+    <h2 id="demos-title" class="mt-3 text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">Demos: así puede verse tu proyecto</h2>
+    <p class="mt-4 max-w-2xl text-lg leading-relaxed text-graphite/80" data-reveal>
+      Ejemplos de lo que podemos construir para tu negocio. Los negocios son ficticios y las fotos están generadas con IA: ábrelos y pruébalos como lo haría un cliente.
+    </p>
+
+    <ul class="demos mt-8 lg:mt-10" data-reveal-stagger>
+      {
+        demos.map((demo) => (
+          <li class="demo-card">
+            <figure class="demo-shot">
+              <Image
+                src={demo.preview}
+                alt={demo.alt}
+                widths={[480, 720, 960, 1440]}
+                sizes="(min-width: 64rem) 32vw, 94vw"
+                loading="lazy"
+                class="demo-media"
+              />
+              <span class="tag demo-badge">Demo</span>
+            </figure>
+            <div class="demo-body">
+              <p class="tag">{demo.sector}</p>
+              <h3 class="mt-4 text-2xl leading-tight font-semibold tracking-[-0.04em]">{demo.name}</h3>
+              <p class="mt-2 mb-6 leading-relaxed text-graphite/70">{demo.description}</p>
+              <a
+                href={`/demos/${demo.slug}/`}
+                class="btn btn-primary w-full sm:w-fit"
+                target="_blank"
+                rel="noopener"
+                aria-label={`Ver demo de ${demo.name} (se abre en una pestaña nueva)`}
+              >
+                Ver demo
+                <svg class="size-4" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="M4 12 12 4M5.5 4H12v6.5" stroke="currentColor" stroke-width="1.5" />
+                </svg>
+              </a>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+
+    <div class="demos-cta mt-10 lg:mt-12" data-reveal>
+      <p class="text-2xl font-semibold tracking-[-0.04em] sm:text-3xl">¿Quieres algo así para tu negocio?</p>
+      <a href="#contacto" class="btn btn-primary w-full sm:w-auto">
+        Escríbenos
+        <svg class="size-4" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M2 8h11M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" />
+        </svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<script src="../scripts/reveal.ts"></script>
