@@ -83,6 +83,11 @@ Dark mode premium tipo web3, inspirado en el hero de sui.io.
   - Medios: cada proyecto acepta `media` de tipo `image` o `video` (MP4 silenciado en bucle, solo se reproduce el del panel activo y nunca con `prefers-reduced-motion`). Formato 16:10. En escritorio el medio ocupa todo el panel y la información va superpuesta abajo sobre un degradado `ink`; en móvil el medio va arriba y el texto debajo. Los archivos van en `public/proyectos/`. Sin medio, se muestra un marco con `[ Captura · PENDIENTE ]`.
   - Grabación: `tools/record.mjs <slug>` reproduce el recorrido de `tools/tours/<slug>.mjs` con Playwright, captura a 1440 × 900 y genera `public/proyectos/<slug>.mp4` y `<slug>.webp` con ffmpeg. `--encode` vuelve a montar desde la última captura sin grabar. Para webs con login, `tools/login.mjs <slug> <url>` guarda la sesión en `tools/.auth/` (excluida de git).
 
+- **Demos** (`src/components/Demos.astro` + `src/data/demos.ts`): sección clara después de Proyectos, "Demos: así puede verse tu proyecto". Tres tarjetas (una columna en móvil, tres desde 64rem) con captura 16:10, etiqueta "Demo" en `brand`, rubro, nombre del negocio ficticio, una línea y botón "Ver demo" que abre `/demos/<slug>/` en una pestaña nueva. Cierra con "¿Quieres algo así para tu negocio?" y un botón a `#contacto`. Son demos con negocios ficticios y fotos generadas con IA: nunca se presentan como clientes, casos de éxito ni proyectos realizados.
+  - Las demos son páginas independientes en `public/demos/<slug>/` (`index.html` + `img/`), fuera del sistema de diseño de la landing: tienen sus propios estilos, scripts inline y fuentes de Google Fonts. Cada una lleva la etiqueta "Demo" siempre visible, el aviso de negocio ficticio, un enlace "← Volver a Enigma Builders" y el crédito enlazado a la home, y `noindex`.
+  - En `npm run dev`, un middleware de `astro.config.mjs` sirve `/demos/<slug>/` desde su `index.html`; en producción lo hace el hosting.
+  - Capturas: `tools/capture-demos.mjs [url]` saca 1440 × 900 de cada demo con Playwright y las guarda en `src/assets/demos/`, que se sirven con `astro:assets` en WebP con `srcset`.
+
 ## Contenido
 
 - Copy en castellano de España.
