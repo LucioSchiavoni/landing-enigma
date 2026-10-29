@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="es" class="is-locked">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="referrer" content="no-referrer">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#08061A">
+<title>Panel · Enigma Builders</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preload" href="/p/assets/lexend-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/p/assets/propuesta.css">
+<link rel="stylesheet" href="/p/assets/admin.css">
+<script type="module" src="/p/assets/admin.js"></script>
+</head>
+<body>
+<div class="lock" data-lock>
+  <div class="dot-grid" aria-hidden="true"></div>
+  <div class="band band-left" aria-hidden="true"></div>
+  <div class="band band-right" aria-hidden="true"></div>
+  <form class="lock-card" autocomplete="off" data-unlock>
+    <img class="seal" src="/p/assets/logo-circulo.webp" width="480" height="480" alt="Enigma Builders">
+    <span class="tag">[ Acceso restringido ]</span>
+    <h1 class="lock-title">Panel</h1>
+    <p class="lock-text">Introduce el secret para ver las propuestas enviadas.</p>
+    <div class="lock-field">
+      <label class="sr-only" for="secret">Secret</label>
+      <input class="field-input" id="secret" type="password" autocomplete="current-password" aria-describedby="secret-status" required data-secret>
+      <button class="btn btn-primary" type="submit" data-unlock-submit>Entrar</button>
+    </div>
+    <p class="lock-status" id="secret-status" role="status" data-unlock-status></p>
+    <span class="tag lock-foot">Enigma Builders · Uso interno</span>
+  </form>
+</div>
+<div class="admin" data-admin hidden></div>
+</body>
+</html>
