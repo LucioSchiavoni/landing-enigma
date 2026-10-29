@@ -1,0 +1,384 @@
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+.lock-field {
+  display: grid;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.field {
+  display: grid;
+  gap: 0.5rem;
+  text-align: left;
+}
+
+.field-label {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.field-hint {
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.field-input {
+  width: 100%;
+  min-height: 3rem;
+  padding: 0 1rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 0;
+  background: color-mix(in oklab, var(--ink) 80%, var(--brand));
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.field-input:hover {
+  border-color: var(--brand-soft);
+}
+
+.field-input:focus-visible {
+  border-color: var(--accent);
+}
+
+.field-input::placeholder {
+  color: color-mix(in oklab, var(--white) 40%, transparent);
+}
+
+select.field-input {
+  appearance: none;
+  padding-right: 2.5rem;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--accent) 50%),
+    linear-gradient(135deg, var(--accent) 50%, transparent 50%);
+  background-position:
+    calc(100% - 1.25rem) 50%,
+    calc(100% - 0.9375rem) 50%;
+  background-size: 0.3125rem 0.3125rem;
+  background-repeat: no-repeat;
+}
+
+select.field-input option {
+  background: var(--ink);
+}
+
+.field-mono {
+  font-family: var(--mono);
+  letter-spacing: 0.3em;
+}
+
+.field-row {
+  display: grid;
+  align-items: start;
+  gap: 1rem;
+}
+
+@media (min-width: 36rem) {
+  .field-row {
+    grid-template-columns: 10rem 1fr;
+  }
+}
+
+button.btn-secondary {
+  background: transparent;
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: progress;
+}
+
+.btn-small {
+  min-height: 2.5rem;
+  padding: 0 1rem;
+  font-size: 0.875rem;
+}
+
+.admin {
+  position: relative;
+  min-height: 100svh;
+}
+
+.admin-main {
+  display: grid;
+  gap: 2.5rem;
+  padding: 7.5rem 0 5rem;
+}
+
+.admin-head {
+  display: grid;
+  gap: 1.5rem;
+  align-items: end;
+}
+
+.admin-heading {
+  display: grid;
+  gap: 1rem;
+}
+
+.admin-title {
+  font-size: clamp(2.5rem, 8vw, 4.5rem);
+  line-height: 0.95;
+  font-weight: 600;
+  letter-spacing: -0.05em;
+}
+
+.admin-title:focus {
+  outline: none;
+}
+
+.admin-note {
+  max-width: 38rem;
+  color: var(--muted);
+  font-size: 0.9375rem;
+}
+
+.admin-head > .btn {
+  justify-self: start;
+}
+
+@media (min-width: 48rem) {
+  .admin-head {
+    grid-template-columns: 1fr auto;
+  }
+}
+
+.admin-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.admin-empty {
+  padding: 3rem 1.5rem;
+  border: 1px dashed var(--line-strong);
+  color: var(--muted);
+  text-align: center;
+}
+
+.card {
+  display: grid;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  border: 1px solid var(--line);
+  background: var(--surface-brand);
+}
+
+.card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: start;
+  justify-content: space-between;
+  gap: 0.75rem 1.5rem;
+}
+
+.card-heading {
+  display: grid;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.card-title {
+  font-size: 1.5rem;
+  line-height: 1.1;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  overflow-wrap: anywhere;
+}
+
+.card-date {
+  color: var(--muted);
+}
+
+.card-grid {
+  display: grid;
+  gap: 1.25rem;
+  margin: 0;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+}
+
+@media (min-width: 56rem) {
+  .card-grid {
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+.card-item {
+  display: grid;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.card-label {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.card-value {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin: 0;
+  min-width: 0;
+  font-size: 0.9375rem;
+  overflow-wrap: anywhere;
+}
+
+.card-url {
+  min-width: 0;
+  color: var(--white);
+  text-decoration-color: var(--line-strong);
+  text-underline-offset: 3px;
+}
+
+.card-url:hover {
+  text-decoration-color: var(--accent);
+}
+
+.card-pin {
+  font-family: var(--mono);
+  font-size: 1.125rem;
+  letter-spacing: 0.3em;
+}
+
+.icon-btn {
+  min-height: 2rem;
+  padding: 0 0.625rem;
+  border: 1px solid var(--line-strong);
+  background: transparent;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.icon-btn:hover {
+  border-color: var(--accent);
+}
+
+.card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.admin-site {
+  display: grid;
+  gap: 1rem;
+  align-items: end;
+  padding-top: 2rem;
+  border-top: 1px solid var(--line);
+}
+
+@media (min-width: 48rem) {
+  .admin-site {
+    grid-template-columns: minmax(0, 28rem) auto;
+    justify-content: start;
+  }
+
+  .admin-site .field {
+    grid-template-rows: auto auto;
+  }
+
+  .admin-site .field-hint {
+    display: none;
+  }
+}
+
+.admin-toast {
+  position: fixed;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  left: 0.75rem;
+  z-index: 30;
+  max-width: 32rem;
+  margin-left: auto;
+  padding: 0.875rem 1rem;
+  border: 1px solid var(--brand-soft);
+  background: color-mix(in oklab, var(--ink) 90%, var(--brand));
+  font-size: 0.875rem;
+}
+
+.admin-toast:empty {
+  display: none;
+}
+
+.admin-dialog {
+  width: min(100% - 1.5rem, 32rem);
+  max-height: calc(100svh - 1.5rem);
+  padding: 0;
+  border: 1px solid var(--line-strong);
+  background: var(--ink);
+  color: var(--white);
+  overflow: auto;
+}
+
+.admin-dialog::backdrop {
+  background: color-mix(in oklab, var(--ink) 80%, transparent);
+}
+
+.dialog-form {
+  display: grid;
+  gap: 1.25rem;
+  padding: 1.5rem;
+}
+
+.dialog-head {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.dialog-title {
+  font-size: 1.75rem;
+  line-height: 1;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+}
+
+.dialog-text {
+  color: var(--muted);
+  font-size: 0.9375rem;
+}
+
+.dialog-error {
+  font-size: 0.875rem;
+}
+
+.dialog-error:empty {
+  display: none;
+}
+
+.dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .admin-dialog[open] {
+    animation: dialog-in 0.3s var(--ease);
+  }
+}
+
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+}

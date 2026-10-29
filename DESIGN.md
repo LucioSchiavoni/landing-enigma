@@ -88,6 +88,12 @@ Dark mode premium tipo web3, inspirado en el hero de sui.io.
   - En `npm run dev`, un middleware de `astro.config.mjs` sirve `/demos/<slug>/` desde su `index.html`; en producción lo hace el hosting.
   - Capturas: `tools/capture-demos.mjs [url]` saca 1440 × 900 de cada demo con Playwright y las guarda en `src/assets/demos/`, que se sirven con `astro:assets` en WebP con `srcset`.
 
+- **Propuestas privadas** (`tools/propuesta.mjs` + `tools/lib/`): cada propuesta se escribe en `propuestas/<nombre>.html` (excluida de git) y se publica cifrada con un PIN de 6 dígitos (PBKDF2 + AES-GCM) en `public/p/<slug>/index.html`, que se descifra en el navegador con `public/p/assets/propuesta.js`. El slug es aleatorio y se guarda en `propuestas/<nombre>.json`. Como la web es estática, un PIN nuevo solo vale cuando se publica el archivo reescrito.
+- **Panel de administración** (`public/a/<slug>/` + `public/p/assets/admin.{js,css}` + `tools/admin-dev.mjs`): URL aleatoria no enlazada desde ningún sitio y `noindex`. La bóveda `vault.json` (propuestas, PIN, cliente, contacto y dominio) va cifrada con el secret y se descifra en el navegador. Se crea una sola vez con `node tools/admin-init.mjs <secret> [https://dominio]`.
+  - En producción es de solo lectura: lista las propuestas con enlace, PIN (oculto por defecto) y contacto, y compone los mensajes de enlace y de PIN por separado (`wa.me`, `mailto:` o copiar al portapapeles).
+  - Con `npm run dev`, el middleware `/__admin/*` de `tools/admin-dev.mjs` permite crear propuestas desde `propuestas/*.html`, editar el contacto, cambiar el PIN (vuelve a cifrar la página publicada) y fijar el dominio. Cada petición se valida descifrando la bóveda con el secret. Los cambios se publican con commit y push.
+  - Si se cambia un PIN con `tools/propuesta.mjs`, el panel queda desactualizado: los PINs se cambian desde el panel.
+
 ## Contenido
 
 - Copy en castellano de España.
