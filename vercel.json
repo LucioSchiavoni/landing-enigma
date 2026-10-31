@@ -1,0 +1,20 @@
+{
+  "rewrites": [
+    { "source": "/p/:slug([a-z0-9-]{8,})", "destination": "/p/_shell/index.html" },
+    { "source": "/p/:slug([a-z0-9-]{8,})/", "destination": "/p/_shell/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/(p|admin|api|mirror)/(.*)",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow, noarchive" }
+      ]
+    },
+    {
+      "source": "/(p|admin|api)/(.*)",
+      "headers": [
+        { "key": "Referrer-Policy", "value": "no-referrer" }
+      ]
+    }
+  ]
+}

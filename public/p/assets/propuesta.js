@@ -4,7 +4,6 @@ const pin = document.querySelector('[data-pin]');
 const input = document.querySelector('[data-pin-input]');
 const cells = [...document.querySelectorAll('[data-pin-cell]')];
 const status = document.querySelector('[data-pin-status]');
-const payload = document.querySelector('[data-payload]');
 
 const storageKey = `propuesta:${location.pathname}`;
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -12,20 +11,31 @@ let busy = false;
 let failures = 0;
 let lockedUntil = 0;
 
-const fromBase64 = (value) => Uint8Array.from(atob(value), (char) => char.charCodeAt(0));
+const slug = location.pathname.split('/').filter(Boolean).pop();
 
-const decrypt = async (code) => {
-  const data = JSON.parse(payload.textContent);
-  const material = await crypto.subtle.importKey('raw', new TextEncoder().encode(code), 'PBKDF2', false, ['deriveKey']);
-  const key = await crypto.subtle.deriveKey(
-    { name: 'PBKDF2', salt: fromBase64(data.salt), iterations: data.iterations, hash: 'SHA-256' },
-    material,
-    { name: 'AES-GCM', length: 256 },
-    false,
-    ['decrypt'],
-  );
-  const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: fromBase64(data.iv) }, key, fromBase64(data.data));
-  return new TextDecoder().decode(plain);
+class Rejected extends Error {
+  constructor(message, limited) {
+    super(message);
+    this.limited = limited;
+  }
+}
+
+const unlock = async (code) => {
+  let response;
+  try {
+    response = await fetch('/api/p/unlock', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ slug, pin: code }),
+    });
+  } catch {
+    throw new Error('Sin conexión. Inténtelo de nuevo.');
+  }
+  const result = await response.json().catch(() => ({}));
+  if (response.ok && typeof result.html === 'string') return result.html;
+  if (response.status === 401) throw new Rejected('PIN incorrecto', false);
+  if (response.status === 429) throw new Rejected(result.error ?? 'Demasiados intentos. Espere unos minutos.', true);
+  throw new Error('No se pudo verificar el PIN. Inténtelo de nuevo.');
 };
 
 const render = () => {
@@ -75,6 +85,19 @@ const open = (html) => {
   doc.querySelector('h1')?.focus({ preventScroll: true });
 };
 
+const lock429 = (message) => {
+  input.value = '';
+  render();
+  lockedUntil = Date.now() + 60000;
+  input.disabled = true;
+  setStatus(message, true);
+  setTimeout(() => {
+    input.disabled = false;
+    setStatus('Ingrese el PIN de 6 dígitos');
+    input.focus();
+  }, 60000);
+};
+
 const fail = () => {
   failures += 1;
   input.value = '';
@@ -105,7 +128,7 @@ const submit = async (code, remember = true) => {
   pin.classList.add('is-busy');
   setStatus('Verificando…');
   try {
-    const html = await decrypt(code);
+    const html = await unlock(code);
     if (remember) {
       try {
         sessionStorage.setItem(storageKey, code);
@@ -113,12 +136,19 @@ const submit = async (code, remember = true) => {
     }
     setStatus('Acceso concedido');
     open(html);
-  } catch {
+  } catch (error) {
     try {
       sessionStorage.removeItem(storageKey);
     } catch {}
-    if (remember) fail();
-    else setStatus('Ingrese el PIN de 6 dígitos');
+    if (!remember) setStatus('Ingrese el PIN de 6 dígitos');
+    else if (error instanceof Rejected && error.limited) lock429(error.message);
+    else if (error instanceof Rejected) fail();
+    else {
+      input.value = '';
+      render();
+      setStatus(error.message, true);
+      input.focus();
+    }
   } finally {
     busy = false;
     pin.classList.remove('is-busy');
