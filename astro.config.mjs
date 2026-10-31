@@ -6,7 +6,7 @@ const demoIndex = {
   name: 'demo-index',
   configureServer(server) {
     server.middlewares.use((req, _res, next) => {
-      const match = req.url?.match(/^(\/(?:demos|p|a)\/[\w-]+\/)(\?.*)?$/);
+      const match = req.url?.match(/^(\/(?:(?:demos|p|a)\/[\w-]+|mirror)\/)(\?.*)?$/);
       if (match) req.url = `${match[1]}index.html${match[2] ?? ''}`;
       next();
     });

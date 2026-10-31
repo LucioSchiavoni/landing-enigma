@@ -93,6 +93,7 @@ Dark mode premium tipo web3, inspirado en el hero de sui.io.
   - En producción es de solo lectura: lista las propuestas con enlace, PIN (oculto por defecto) y contacto, y compone los mensajes de enlace y de PIN por separado (`wa.me`, `mailto:` o copiar al portapapeles).
   - Con `npm run dev`, el middleware `/__admin/*` de `tools/admin-dev.mjs` permite crear propuestas desde `propuestas/*.html`, editar el contacto, cambiar el PIN (vuelve a cifrar la página publicada) y fijar el dominio. Cada petición se valida descifrando la bóveda con el secret. Los cambios se publican con commit y push.
   - Si se cambia un PIN con `tools/propuesta.mjs`, el panel queda desactualizado: los PINs se cambian desde el panel.
+- **Mirror Studio en `/mirror`**: aplicación Next.js (carpeta hermana `mirror-studio`, `basePath: '/mirror'`, `output: 'export'`, `noindex`) exportada como sitio estático a `public/mirror/`. No tiene backend, así que se despliega junto con la landing. Se actualiza con `node tools/sync-mirror.mjs [ruta]`, que compila mirror-studio y reemplaza `public/mirror/`. No aparece enlazado en la landing: se comparte el enlace directamente con los clientes potenciales. Es una página independiente, fuera del sistema de diseño de la landing.
 
 ## Contenido
 
