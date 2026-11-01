@@ -1,6 +1,6 @@
-import { decrypt, encrypt, randomPin, randomSlug } from '../_lib/crypto';
-import { isAdmin, json, readJson, sameOrigin, text } from '../_lib/http';
-import { db, type Row } from '../_lib/supabase';
+import { decrypt, encrypt, randomPin, randomSlug } from '../_lib/crypto.js';
+import { isAdmin, json, readJson, sameOrigin, text } from '../_lib/http.js';
+import { db, type Row } from '../_lib/supabase.js';
 
 const channels = ['whatsapp', 'email', 'otro'] as const;
 

@@ -1,5 +1,5 @@
 import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes, randomInt, timingSafeEqual } from 'node:crypto';
-import { env } from './env';
+import { env } from './env.js';
 
 export const safeEqual = (a: string, b: string) =>
   timingSafeEqual(createHash('sha256').update(a).digest(), createHash('sha256').update(b).digest());

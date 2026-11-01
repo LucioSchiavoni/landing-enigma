@@ -1,4 +1,4 @@
-import { hashKey, verifyToken } from './crypto';
+import { hashKey, verifyToken } from './crypto.js';
 
 export const json = (status: number, body: unknown, headers: Record<string, string> = {}) =>
   new Response(JSON.stringify(body), {

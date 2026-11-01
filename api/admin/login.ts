@@ -1,7 +1,7 @@
-import { safeEqual, signToken } from '../_lib/crypto';
-import { env } from '../_lib/env';
-import { clientKey, isAdmin, json, readJson, sameOrigin, sessionCookie } from '../_lib/http';
-import { db } from '../_lib/supabase';
+import { safeEqual, signToken } from '../_lib/crypto.js';
+import { env } from '../_lib/env.js';
+import { clientKey, isAdmin, json, readJson, sameOrigin, sessionCookie } from '../_lib/http.js';
+import { db } from '../_lib/supabase.js';
 
 const ttl = 12 * 3600;
 

@@ -1,6 +1,6 @@
-import { decrypt, safeEqual } from '../_lib/crypto';
-import { clientKey, json, readJson, sameOrigin } from '../_lib/http';
-import { db } from '../_lib/supabase';
+import { decrypt, safeEqual } from '../_lib/crypto.js';
+import { clientKey, json, readJson, sameOrigin } from '../_lib/http.js';
+import { db } from '../_lib/supabase.js';
 
 const denied = () => json(401, { error: 'PIN incorrecto' });
 
